@@ -23,7 +23,7 @@ ponder.on("matchingEngine:OrderMatched", async ({ event, context }) => {
     .concat("-")
     .concat((!event.args.isBid).toString())
     .concat("-")
-    .concat(event.args.id.toString());
+    .concat(event.args.id.toString())
 
   const placed = await Order.findUnique({
     id,
@@ -33,7 +33,7 @@ ponder.on("matchingEngine:OrderMatched", async ({ event, context }) => {
     id: event.args.orderbook,
   });
 
-  if (placed!.amount - event.args.amount == 0n) {
+  if (event.args.clear) {
     Order.delete({
       id,
     });
@@ -46,7 +46,8 @@ ponder.on("matchingEngine:OrderMatched", async ({ event, context }) => {
         base: pair!.base,
         quote: pair!.quote,
         price: event.args.price,
-        amount: placed!.amount - event.args.amount,
+        amount: placed!.amount,
+        placed: placed!.amount - event.args.amount,
         timestamp: event.block.timestamp,
         maker: event.args.owner,
       },
@@ -55,7 +56,7 @@ ponder.on("matchingEngine:OrderMatched", async ({ event, context }) => {
 });
 
 ponder.on("matchingEngine:OrderPlaced", async ({ event, context }) => {
-  const { Account, Order, Pair, OrderHistory } = context.db;
+  const { Order, Pair, OrderHistory } = context.db;
   const pair = await Pair.findUnique({
     id: event.args.orderbook,
   });
@@ -66,7 +67,7 @@ ponder.on("matchingEngine:OrderPlaced", async ({ event, context }) => {
     .concat("-")
     .concat(event.args.isBid.toString())
     .concat("-")
-    .concat(event.args.id.toString());
+    .concat(event.args.id.toString())
 
   await Order.create({
     id,
@@ -76,20 +77,31 @@ ponder.on("matchingEngine:OrderPlaced", async ({ event, context }) => {
       base: pair!.base,
       quote: pair!.quote,
       price: event.args.price,
-      amount: event.args.amount,
+      amount: event.args.withoutFee,
+      placed: event.args.placed,
       timestamp: event.block.timestamp,
       maker: event.args.owner,
     },
   });
-  await OrderHistory.create({
+  await OrderHistory.upsert({
     id,
-    data: {
+    create: {
       orderId: event.args.id,
       isBid: event.args.isBid,
       base: pair!.base,
       quote: pair!.quote,
       price: event.args.price,
-      amount: event.args.amount,
+      amount: event.args.withoutFee,
+      timestamp: event.block.timestamp,
+      maker: event.args.owner,
+    },
+    update: {
+      orderId: event.args.id,
+      isBid: event.args.isBid,
+      base: pair!.base,
+      quote: pair!.quote,
+      price: event.args.price,
+      amount: event.args.withoutFee,
       timestamp: event.block.timestamp,
       maker: event.args.owner,
     },
@@ -97,16 +109,35 @@ ponder.on("matchingEngine:OrderPlaced", async ({ event, context }) => {
 });
 
 ponder.on("matchingEngine:OrderCanceled", async ({ event, context }) => {
-  const { Order } = context.db;
+  const { Order, OrderHistory } = context.db;
 
   const id = event.args.owner
-    .concat("-")
-    .concat(event.args.orderbook)
-    .concat("-")
-    .concat((!event.args.isBid).toString())
-    .concat("-")
-    .concat(event.args.id.toString());
+  .concat("-")
+  .concat(event.args.orderbook)
+  .concat("-")
+  .concat(event.args.isBid.toString())
+  .concat("-")
+  .concat(event.args.id.toString())  
 
+  const canceled = await OrderHistory.findUnique({
+    id,
+  });
+
+  if(canceled!.amount - event.args.amount == 0n) {
+    OrderHistory.delete({
+      id,
+    })
+  } else {
+    OrderHistory.update({
+      id, 
+      data: {
+        amount: canceled!.amount - event.args.amount
+      }
+    })
+  }
+
+  
+  
   Order.delete({
     id,
   });

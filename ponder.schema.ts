@@ -73,6 +73,8 @@ export default createSchema((p) => ({
     price: p.bigint(),
     /// deposit asset amount
     amount: p.bigint(),
+    /// placed asset amount
+    placed: p.bigint(),
     /// submitted timestamp
     timestamp: p.bigint(),
     /// wallet address who made an order

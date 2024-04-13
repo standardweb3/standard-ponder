@@ -9,18 +9,18 @@ const latestBlockMode = await createPublicClient({
 
 export default createConfig({
   networks: {
-    mode: {
-      chainId: 34443,
-      transport: http(process.env.MODE_RPC)
+    blast: {
+      chainId: 238,
+      transport: http(process.env.BLAST_RPC)
     }
   },
   contracts: {
     matchingEngine: {
       abi: MatchingEngineABI,
-      address: "0x3df48559F01F07691D03179380919767553a74f8",
+      address: "0x8D44C188E64045b64879fc7FD9fa80d81AbF9942",
       network: {
-        mode: {
-          startBlock: 6257308,
+        blast: {
+          startBlock: 2094834,
         }
       }
     }
