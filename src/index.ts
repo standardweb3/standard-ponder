@@ -1,7 +1,12 @@
 import { ponder } from "@/generated";
 
 import { Knock } from "@knocklabs/node";
-import { OrderMatchedHandleBuckets, OrderMatchedHandleOrder, OrderMatchedHandleTrade } from "./utils";
+import {
+  OrderMatchedHandleBuckets,
+  OrderMatchedHandleOrder,
+  OrderMatchedHandleTrade,
+  OrderPlacedHandleOrders,
+} from "./utils";
 
 const knock = new Knock(process.env.KNOCK_API_KEY);
 
@@ -21,19 +26,19 @@ ponder.on("matchingEngine:PairAdded", async ({ event, context }) => {
   await Token.create({
     id: event.args.base,
     data: {
-      price: 0n,
+      price: 0,
       cgPrice: 0.0,
-      cgId: ""
-    }
-  })
+      cgId: "",
+    },
+  });
   await Token.create({
     id: event.args.quote,
     data: {
-      price: 0n,
+      price: 0,
       cgPrice: 0.0,
-      cgId: ""
-    }
-  })
+      cgId: "",
+    },
+  });
 });
 
 ponder.on("matchingEngine:OrderMatched", async ({ event, context }) => {
@@ -48,7 +53,16 @@ ponder.on("matchingEngine:OrderMatched", async ({ event, context }) => {
   await OrderMatchedHandleTrade(event, pair, Trade);
 
   // Update trade buckets
-  await OrderMatchedHandleBuckets(event, pair, DayBucket, HourBucket, MinBucket);
+  await OrderMatchedHandleBuckets(
+    event,
+    pair,
+    DayBucket,
+    HourBucket,
+    MinBucket
+  );
+
+  // Update recent transactions
+  await OrderMatchedHandleTrade(event, pair, Trade);
 
   // Update Order info
   await OrderMatchedHandleOrder(event, pair, Order);
@@ -60,51 +74,7 @@ ponder.on("matchingEngine:OrderPlaced", async ({ event, context }) => {
     id: event.args.orderbook,
   });
 
-  const id = event.args.owner
-    .concat("-")
-    .concat(event.args.orderbook)
-    .concat("-")
-    .concat(event.args.isBid.toString())
-    .concat("-")
-    .concat(event.args.id.toString());
-
-  await Order.create({
-    id,
-    data: {
-      orderId: event.args.id,
-      isBid: event.args.isBid,
-      base: pair!.base,
-      quote: pair!.quote,
-      price: event.args.price,
-      amount: event.args.withoutFee,
-      placed: event.args.placed,
-      timestamp: event.block.timestamp,
-      maker: event.args.owner,
-    },
-  });
-  await OrderHistory.upsert({
-    id,
-    create: {
-      orderId: event.args.id,
-      isBid: event.args.isBid,
-      base: pair!.base,
-      quote: pair!.quote,
-      price: event.args.price,
-      amount: event.args.withoutFee,
-      timestamp: event.block.timestamp,
-      maker: event.args.owner,
-    },
-    update: {
-      orderId: event.args.id,
-      isBid: event.args.isBid,
-      base: pair!.base,
-      quote: pair!.quote,
-      price: event.args.price,
-      amount: event.args.withoutFee,
-      timestamp: event.block.timestamp,
-      maker: event.args.owner,
-    },
-  });
+  await OrderPlacedHandleOrders(event, pair, Order, OrderHistory);
 });
 
 ponder.on("matchingEngine:OrderCanceled", async ({ event, context }) => {

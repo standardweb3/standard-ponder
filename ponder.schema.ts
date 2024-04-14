@@ -5,19 +5,19 @@ export default createSchema((p) => ({
     /// {base address}-{quote address}-{min}
     id: p.string(),
     /// open price in 1 min related to asset
-    open: p.bigint(),
+    open: p.float(),
     /// high price in 1 min related to asset
-    high: p.bigint(),
+    high: p.float(),
     /// low price in 1 min related to asset
-    low: p.bigint(),
+    low: p.float(),
     /// close price in 1 min related to asset
-    close: p.bigint(),
+    close: p.float(),
     /// average price in 1 min related to asset
-    average: p.bigint(),
-    /// trade count
-    count: p.bigint(),
+    average: p.float(),
     /// volume in 1 min in base amount
     volume: p.float(),
+    /// trade count
+    count: p.bigint(),
     /// aggregated timestamp in 1 min in seconds
     timestamp: p.int()
   }),
@@ -25,19 +25,19 @@ export default createSchema((p) => ({
     /// {base address}-{quote address}-{hour}
     id: p.string(),
     /// open price in 24 hours related to asset
-    open: p.bigint(),
+    open: p.float(),
     /// high price in 24 hours related to asset
-    high: p.bigint(),
+    high: p.float(),
     /// low price in 24 hours related to asset
-    low: p.bigint(),
+    low: p.float(),
     /// close price in 24 hours related to asset
-    close: p.bigint(),
+    close: p.float(),
     /// average price in 1 min related to asset
-    average: p.bigint(),
-    /// trade count
-    count: p.bigint(),
+    average: p.float(),
     /// volume in 24 hours related to asset
     volume: p.float(),
+    /// trade count
+    count: p.bigint(),
     /// aggregated timestamp in 1 hour in seconds
     timestamp: p.int()
   }),
@@ -45,19 +45,19 @@ export default createSchema((p) => ({
     /// {base address}-{quote address}-{hour}
     id: p.string(),
     /// open price in 24 hours related to asset
-    open: p.bigint(),
+    open: p.float(),
     /// high price in 24 hours related to asset
-    high: p.bigint(),
+    high: p.float(),
     /// low price in 24 hours related to asset
-    low: p.bigint(),
+    low: p.float(),
     /// close price in 24 hours related to asset
-    close: p.bigint(),
+    close: p.float(),
     /// average price in 1 min related to asset
-    average: p.bigint(),
-    /// trade count
-    count: p.bigint(),
+    average: p.float(),
     /// volume in 24 hours related to asset
     volume: p.float(),
+    /// trade count
+    count: p.bigint(),
     /// aggregated timestamp in 24 hours in seconds
     timestamp: p.int()
   }),
@@ -65,7 +65,7 @@ export default createSchema((p) => ({
     /// address of the token contract
     id: p.string(),
     /// price in DEX
-    price: p.bigint(),
+    price: p.float(),
     /// Coingecko id
     cgId: p.string(),
     /// price in Coingecko
@@ -78,8 +78,10 @@ export default createSchema((p) => ({
     base: p.string(),
     /// quote info
     quote: p.string(),
+    /// order type (bid(buy) if true, ask(sell) if false)
+    isBid: p.boolean(),
     /// price in 8 decimals
-    price: p.bigint(),
+    price: p.float(),
     /// traded base token amount
     amount: p.bigint(),
     /// submitted timestamp
@@ -118,7 +120,7 @@ export default createSchema((p) => ({
     /// quote token address
     quote: p.string(),
     /// price in 8 decimals
-    price: p.bigint(),
+    price: p.float(),
     /// deposit asset amount
     amount: p.bigint(),
     /// submitted timestamp
@@ -138,7 +140,7 @@ export default createSchema((p) => ({
     /// quote token address
     quote: p.string(),
     /// price in 8 decimals
-    price: p.bigint(),
+    price: p.float(),
     /// deposit asset amount
     amount: p.bigint(),
     /// placed asset amount
