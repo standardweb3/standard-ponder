@@ -1,12 +1,82 @@
 import { createSchema } from "@ponder/core";
 
 export default createSchema((p) => ({
+  MinBucket: p.createTable({
+    /// {base address}-{quote address}-{min}
+    id: p.string(),
+    /// open price in 1 min related to asset
+    open: p.bigint(),
+    /// high price in 1 min related to asset
+    high: p.bigint(),
+    /// low price in 1 min related to asset
+    low: p.bigint(),
+    /// close price in 1 min related to asset
+    close: p.bigint(),
+    /// average price in 1 min related to asset
+    average: p.bigint(),
+    /// trade count
+    count: p.bigint(),
+    /// volume in 1 min in base amount
+    volume: p.float(),
+    /// aggregated timestamp in 1 min in seconds
+    timestamp: p.int()
+  }),
+  HourBucket: p.createTable({
+    /// {base address}-{quote address}-{hour}
+    id: p.string(),
+    /// open price in 24 hours related to asset
+    open: p.bigint(),
+    /// high price in 24 hours related to asset
+    high: p.bigint(),
+    /// low price in 24 hours related to asset
+    low: p.bigint(),
+    /// close price in 24 hours related to asset
+    close: p.bigint(),
+    /// average price in 1 min related to asset
+    average: p.bigint(),
+    /// trade count
+    count: p.bigint(),
+    /// volume in 24 hours related to asset
+    volume: p.float(),
+    /// aggregated timestamp in 1 hour in seconds
+    timestamp: p.int()
+  }),
+  DayBucket: p.createTable({
+    /// {base address}-{quote address}-{hour}
+    id: p.string(),
+    /// open price in 24 hours related to asset
+    open: p.bigint(),
+    /// high price in 24 hours related to asset
+    high: p.bigint(),
+    /// low price in 24 hours related to asset
+    low: p.bigint(),
+    /// close price in 24 hours related to asset
+    close: p.bigint(),
+    /// average price in 1 min related to asset
+    average: p.bigint(),
+    /// trade count
+    count: p.bigint(),
+    /// volume in 24 hours related to asset
+    volume: p.float(),
+    /// aggregated timestamp in 24 hours in seconds
+    timestamp: p.int()
+  }),
+  Token: p.createTable({
+    /// address of the token contract
+    id: p.string(),
+    /// price in DEX
+    price: p.bigint(),
+    /// Coingecko id
+    cgId: p.string(),
+    /// price in Coingecko
+    cgPrice: p.float(),
+  }),
   Trade: p.createTable({
     /// identifier for a trade
-    id: p.bigint(),
-    /// base token address
+    id: p.string(),
+    /// base info
     base: p.string(),
-    /// quote token address
+    /// quote info
     quote: p.string(),
     /// price in 8 decimals
     price: p.bigint(),
@@ -17,9 +87,7 @@ export default createSchema((p) => ({
     /// taker of the matched order in the orderbook
     taker: p.string(),
     /// maker of the matched order in the orderbook
-    maker: p.string(),
-    /// whether the order is open
-    isOpen: p.boolean()
+    maker: p.string()
   }),
   Account: p.createTable({
     /// account wallet address
@@ -35,9 +103,9 @@ export default createSchema((p) => ({
     /// quote token address
     quote: p.string(),
     /// base token decimal
-    bDecimal: p.bigint(),
+    bDecimal: p.int(),
     /// quote token decimal
-    qDecimal: p.bigint()
+    qDecimal: p.int(),
   }),
   OrderHistory: p.createTable({
     id: p.string(),
