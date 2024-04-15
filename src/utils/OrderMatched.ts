@@ -112,6 +112,7 @@ export const OrderMatchedHandleTrade = async (
 
   const priceD = parseFloat(formatUnits(event.args.price, 8));
 
+  // upsert Trade as the order rewrites on the id circulating with uint32.max
   Trade.upsert({
     id,
     create: {

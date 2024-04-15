@@ -132,6 +132,10 @@ export default createSchema((p) => ({
     bids: p.many("BidOrder.orderbook"),
     /// placed asks
     asks: p.many("AskOrder.orderbook"),
+    /// buy history
+    buys: p.many("BidOrderHistory.orderbook"),
+    /// sell history
+    sells: p.many("AskOrderHistory.orderbook")
   }),
   BidOrderHistory: p.createTable({
     // a unique identifier
@@ -144,6 +148,8 @@ export default createSchema((p) => ({
     base: p.string(),
     /// quote token address
     quote: p.string(),
+    /// orderbook contract address
+    orderbook: p.string().references("Pair.id"),
     /// price in 8 decimals
     price: p.float(),
     /// deposit asset amount
@@ -164,6 +170,8 @@ export default createSchema((p) => ({
     base: p.string(),
     /// quote token address
     quote: p.string(),
+    /// orderbook contract address
+    orderbook: p.string().references("Pair.id"),
     /// price in 8 decimals
     price: p.float(),
     /// deposit asset amount

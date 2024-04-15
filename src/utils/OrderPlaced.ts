@@ -23,9 +23,10 @@ export const OrderPlacedHandleAccountOrders = async (event: any, pair: any, Acco
         }
     })
 
-    await Order.create({
+    // upsert Order as the order rewrites on the id circulating with uint32.max
+    await Order.upsert({
       id,
-      data: {
+      create: {
         orderId: event.args.id,
         isBid: event.args.isBid,
         base: pair!.base,
@@ -37,8 +38,21 @@ export const OrderPlacedHandleAccountOrders = async (event: any, pair: any, Acco
         timestamp: event.block.timestamp,
         maker: event.args.owner,
       },
+      update: {
+        orderId: event.args.id,
+        isBid: event.args.isBid,
+        base: pair!.base,
+        quote: pair!.quote,
+        orderbook: event.args.orderbook,
+        price: priceD,
+        amount: event.args.withoutFee,
+        placed: event.args.placed,
+        timestamp: event.block.timestamp,
+        maker: event.args.owner,
+      }
     });
 
+    // upsert OrderHistory as the order rewrites on the id circulating with uint32.max
     await OrderHistory.upsert({
       id,
       create: {
@@ -46,6 +60,7 @@ export const OrderPlacedHandleAccountOrders = async (event: any, pair: any, Acco
         isBid: event.args.isBid,
         base: pair!.base,
         quote: pair!.quote,
+        orderbook: event.args.orderbook,
         price: priceD,
         amount: event.args.withoutFee,
         timestamp: event.block.timestamp,
@@ -56,6 +71,7 @@ export const OrderPlacedHandleAccountOrders = async (event: any, pair: any, Acco
         isBid: event.args.isBid,
         base: pair!.base,
         quote: pair!.quote,
+        orderbook: event.args.orderbook,
         price: priceD,
         amount: event.args.withoutFee,
         timestamp: event.block.timestamp,
