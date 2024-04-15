@@ -8,3 +8,6 @@ export {
 export {
     OrderCanceledHandleOrder
 } from "./OrderCanceled";
+export {
+    PairAddedHandleTokenPairOrderbook
+} from "./PairAdded"

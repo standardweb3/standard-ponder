@@ -38,6 +38,7 @@ export const OrderPlacedHandleAccountOrders = async (event: any, pair: any, Acco
         maker: event.args.owner,
       },
     });
+
     await OrderHistory.upsert({
       id,
       create: {

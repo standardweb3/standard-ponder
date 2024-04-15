@@ -1,20 +1,6 @@
 import { createSchema } from "@ponder/core";
 
 export default createSchema((p) => ({
-  Orderbook: p.createTable({
-    /// pair contract address
-    id: p.string(),
-    /// base asset contract address
-    base: p.string(),
-    /// quote asset contract address
-    quote: p.string(),
-    /// placed bids
-    bids: p.many("BidOrder.orderbook"),
-    /// placed asks
-    asks: p.many("AskOrder.orderbook"),
-    /// last updated timestamp for the orderbook
-    lastUpdated: p.int()
-  }),
   MinBucket: p.createTable({
     /// {base address}-{quote address}-{min}
     id: p.string(),
@@ -142,6 +128,10 @@ export default createSchema((p) => ({
     bDecimal: p.int(),
     /// quote token decimal
     qDecimal: p.int(),
+    /// placed bids
+    bids: p.many("BidOrder.orderbook"),
+    /// placed asks
+    asks: p.many("AskOrder.orderbook"),
   }),
   BidOrderHistory: p.createTable({
     // a unique identifier
@@ -195,7 +185,7 @@ export default createSchema((p) => ({
     /// quote token address
     quote: p.string(),
     /// orderbook contract address
-    orderbook: p.string().references("Orderbook.id"),
+    orderbook: p.string().references("Pair.id"),
     /// price in 8 decimals
     price: p.float(),
     /// deposit asset amount
@@ -219,7 +209,7 @@ export default createSchema((p) => ({
     /// quote token address
     quote: p.string(),
     /// orderbook contract address
-    orderbook: p.string().references("Orderbook.id"),
+    orderbook: p.string().references("Pair.id"),
     /// price in 8 decimals
     price: p.float(),
     /// deposit asset amount

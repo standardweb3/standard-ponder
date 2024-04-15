@@ -35,6 +35,4 @@ export const PairAddedHandleTokenPairOrderbook = async (
       qDecimal: event.args.qDecimal,
     },
   });
-
-  
 };

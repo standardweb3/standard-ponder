@@ -7,42 +7,16 @@ import {
   OrderMatchedHandleOrder,
   OrderMatchedHandleTrade,
   OrderPlacedHandleAccountOrders,
+  PairAddedHandleTokenPairOrderbook,
 } from "./utils";
 
 const knock = new Knock(process.env.KNOCK_API_KEY);
 
 ponder.on("matchingEngine:PairAdded", async ({ event, context }) => {
-  const { Pair, Token } = context.db;
+  const { Token, Pair, Orderbook} = context.db;
 
-  const id = event.args.orderbook;
+  await PairAddedHandleTokenPairOrderbook(event, Token, Pair, Orderbook);
 
-  await Pair.create({
-    id,
-    data: {
-      base: event.args.base,
-      quote: event.args.quote,
-      orderbook: event.args.orderbook,
-      bDecimal: event.args.bDecimal,
-      qDecimal: event.args.qDecimal,
-    },
-  });
-
-  await Token.create({
-    id: event.args.base,
-    data: {
-      price: 0,
-      cgPrice: 0.0,
-      cgId: "",
-    },
-  });
-  await Token.create({
-    id: event.args.quote,
-    data: {
-      price: 0,
-      cgPrice: 0.0,
-      cgId: "",
-    },
-  });
 });
 
 ponder.on("matchingEngine:OrderMatched", async ({ event, context }) => {
@@ -83,7 +57,7 @@ ponder.on("matchingEngine:OrderPlaced", async ({ event, context }) => {
   const pair = await Pair.findUnique({
     id: event.args.orderbook,
   });
-  
+
   if(event.args.isBid) {
     await OrderPlacedHandleAccountOrders(event, pair, Account, BidOrder, BidOrderHistory);
   } else {
