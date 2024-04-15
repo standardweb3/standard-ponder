@@ -1,6 +1,20 @@
 import { createSchema } from "@ponder/core";
 
 export default createSchema((p) => ({
+  Orderbook: p.createTable({
+    /// pair contract address
+    id: p.string(),
+    /// base asset contract address
+    base: p.string(),
+    /// quote asset contract address
+    quote: p.string(),
+    /// placed bids
+    bids: p.many("BidOrder.orderbook"),
+    /// placed asks
+    asks: p.many("AskOrder.orderbook"),
+    /// last updated timestamp for the orderbook
+    lastUpdated: p.int()
+  }),
   MinBucket: p.createTable({
     /// {base address}-{quote address}-{min}
     id: p.string(),
@@ -14,10 +28,12 @@ export default createSchema((p) => ({
     close: p.float(),
     /// average price in 1 min related to asset
     average: p.float(),
-    /// volume in 1 min in base amount
-    volume: p.float(),
+    /// volume in 1 min for base asset
+    baseVolume: p.float(),
+    /// volume in 1 min for quote asset
+    quoteVolume: p.float(),
     /// trade count
-    count: p.bigint(),
+    count: p.int(),
     /// aggregated timestamp in 1 min in seconds
     timestamp: p.int()
   }),
@@ -34,10 +50,12 @@ export default createSchema((p) => ({
     close: p.float(),
     /// average price in 1 min related to asset
     average: p.float(),
-    /// volume in 24 hours related to asset
-    volume: p.float(),
+    /// volume in 1 min for base asset
+    baseVolume: p.float(),
+    /// volume in 1 min for quote asset
+    quoteVolume: p.float(),
     /// trade count
-    count: p.bigint(),
+    count: p.int(),
     /// aggregated timestamp in 1 hour in seconds
     timestamp: p.int()
   }),
@@ -54,22 +72,28 @@ export default createSchema((p) => ({
     close: p.float(),
     /// average price in 1 min related to asset
     average: p.float(),
-    /// volume in 24 hours related to asset
-    volume: p.float(),
+    /// volume in 1 min for base asset
+    baseVolume: p.float(),
+    /// volume in 1 min for quote asset
+    quoteVolume: p.float(),
     /// trade count
-    count: p.bigint(),
+    count: p.int(),
     /// aggregated timestamp in 24 hours in seconds
     timestamp: p.int()
   }),
   Token: p.createTable({
     /// address of the token contract
     id: p.string(),
-    /// price in DEX
+    /// price in DEX in USDT
     price: p.float(),
     /// Coingecko id
     cgId: p.string(),
     /// price in Coingecko
     cgPrice: p.float(),
+    /// supported pairs as the base asset
+    basePairs: p.many("Pair.base"),
+    /// supported pairs as the quote asset
+    quotePairs: p.many("Pair.quote"),
   }),
   Trade: p.createTable({
     /// identifier for a trade
@@ -94,22 +118,33 @@ export default createSchema((p) => ({
   Account: p.createTable({
     /// account wallet address
     id: p.string(),
-    /// orders that are already matched or canceled
-    orders: p.many("Order.maker"),
+    /// Last traded
+    lastTraded: p.int(),
+    /// bid orders that are placed by the account
+    bidOrders: p.many("BidOrder.maker"),
+    /// ask orders that are placed by the account
+    askOrders: p.many("AskOrder.maker"),
+    /// bid orders that are already matched or canceled
+    bidOrderHistory: p.many("BidOrderHistory.maker"),
+    /// ask orders that are already matched or canceled
+    askOrderHistory: p.many("AskOrderHistory.maker")
   }),
   Pair: p.createTable({
     /// orderbook contract address
     id: p.string(),
     /// base token address
-    base: p.string(),
+    base: p.string().references("Token.id"),
     /// quote token address
-    quote: p.string(),
+    quote: p.string().references("Token.id"),
+    /// orderbook contract address
+    orderbook: p.string(),
     /// base token decimal
     bDecimal: p.int(),
     /// quote token decimal
     qDecimal: p.int(),
   }),
-  OrderHistory: p.createTable({
+  BidOrderHistory: p.createTable({
+    // a unique identifier
     id: p.string(),
     /// placed order id
     orderId: p.bigint(),
@@ -128,8 +163,8 @@ export default createSchema((p) => ({
     /// wallet address who made an order
     maker: p.string().references("Account.id"),
   }),
-  Order: p.createTable({
-    /// a unique identifier
+  AskOrderHistory: p.createTable({
+    // a unique identifier
     id: p.string(),
     /// placed order id
     orderId: p.bigint(),
@@ -139,6 +174,52 @@ export default createSchema((p) => ({
     base: p.string(),
     /// quote token address
     quote: p.string(),
+    /// price in 8 decimals
+    price: p.float(),
+    /// deposit asset amount
+    amount: p.bigint(),
+    /// submitted timestamp
+    timestamp: p.bigint(),
+    /// wallet address who made an order
+    maker: p.string().references("Account.id"),
+  }),
+  BidOrder: p.createTable({
+    /// a unique identifier
+    id: p.string(),
+    /// order type (bid(buy) if true, ask(sell) if false)
+    isBid: p.boolean(),
+    /// placed order id
+    orderId: p.bigint(),
+    /// base token address
+    base: p.string(),
+    /// quote token address
+    quote: p.string(),
+    /// orderbook contract address
+    orderbook: p.string().references("Orderbook.id"),
+    /// price in 8 decimals
+    price: p.float(),
+    /// deposit asset amount
+    amount: p.bigint(),
+    /// placed asset amount
+    placed: p.bigint(),
+    /// submitted timestamp
+    timestamp: p.bigint(),
+    /// wallet address who made an order
+    maker: p.string().references("Account.id"),
+  }),
+  AskOrder: p.createTable({
+    /// a unique identifier
+    id: p.string(),
+    /// order type (bid(buy) if true, ask(sell) if false)
+    isBid: p.boolean(),
+    /// placed order id
+    orderId: p.bigint(),
+    /// base token address
+    base: p.string(),
+    /// quote token address
+    quote: p.string(),
+    /// orderbook contract address
+    orderbook: p.string().references("Orderbook.id"),
     /// price in 8 decimals
     price: p.float(),
     /// deposit asset amount

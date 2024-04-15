@@ -1,16 +1,14 @@
 import { formatUnits } from "viem";
 
-const getBaseVolume = (
+const getVolume = (
   isBid: any,
-  price: any,
   amount: bigint,
   bDecimal: any,
   qDecimal: any
 ) => {
   if (isBid) {
-    const priceD = formatUnits(price, 8);
     const quoteD = formatUnits(amount, qDecimal);
-    return parseFloat(quoteD) / parseFloat(priceD);
+    return parseFloat(quoteD);
   } else {
     const baseD = formatUnits(amount, bDecimal);
     return parseFloat(baseD);
@@ -33,15 +31,10 @@ const handleBucketInTime = async (
     .concat("-")
     .concat(aggregatedTime.toString());
 
-  const baseVolume = getBaseVolume(
-    event.args.isBid,
-    event.args.price,
-    event.args.amount,
-    pair!.bDecimal,
-    pair!.qDecimal
-  );
-
   const priceD = parseFloat(formatUnits(event.args.price, 8));
+  const matchedOrderType = !event.args.isBid;
+  
+  const volume = getVolume(matchedOrderType, event.args.amount, pair.bDecimal, pair.qDecimal);
 
   await contextObj.upsert({
     id,
@@ -51,8 +44,9 @@ const handleBucketInTime = async (
       low: priceD,
       high: priceD,
       average: priceD,
-      count: 1n,
-      volume: baseVolume,
+      count: 1,
+      baseVolume: matchedOrderType == false ? volume : 0,
+      quoteVolume: matchedOrderType == true ? volume : 0,
       timestamp: aggregatedTime,
     },
     update: ({ current }) => ({
@@ -61,8 +55,9 @@ const handleBucketInTime = async (
       high: current.high < priceD ? priceD : current.high,
       average:
         (current.average * current.count + priceD) / (current.count + 1n),
-      count: current.count + 1n,
-      volume: current.volume + baseVolume,
+      count: current.count + 1,
+      baseVolume: matchedOrderType == false ? current.baseVolume + volume : 0,
+      quoteVolume: matchedOrderType == true ? current.quoteVolume + volume : 0,
     }),
   });
 };
@@ -141,6 +136,7 @@ export const OrderMatchedHandleTrade = async (
     },
   });
 };
+
 export const OrderMatchedHandleOrder = async (
   event: any,
   pair: any,
@@ -164,10 +160,11 @@ export const OrderMatchedHandleOrder = async (
     Order.update({
       id,
       data: ({current}) => ({
-        orderId: event.args.id,
-        isBid: event.args.isBid,
+        orderId: current.id,
+        isBid: current.isBid,
         base: pair!.base,
         quote: pair!.quote,
+        orderbook: current.orderbook,
         price: priceD,
         amount: current.amount,
         placed: current.amount - event.args.amount,

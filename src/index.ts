@@ -2,10 +2,11 @@ import { ponder } from "@/generated";
 
 import { Knock } from "@knocklabs/node";
 import {
+  OrderCanceledHandleOrder,
   OrderMatchedHandleBuckets,
   OrderMatchedHandleOrder,
   OrderMatchedHandleTrade,
-  OrderPlacedHandleOrders,
+  OrderPlacedHandleAccountOrders,
 } from "./utils";
 
 const knock = new Knock(process.env.KNOCK_API_KEY);
@@ -13,11 +14,14 @@ const knock = new Knock(process.env.KNOCK_API_KEY);
 ponder.on("matchingEngine:PairAdded", async ({ event, context }) => {
   const { Pair, Token } = context.db;
 
+  const id = event.args.orderbook;
+
   await Pair.create({
-    id: event.args.orderbook,
+    id,
     data: {
       base: event.args.base,
       quote: event.args.quote,
+      orderbook: event.args.orderbook,
       bDecimal: event.args.bDecimal,
       qDecimal: event.args.qDecimal,
     },
@@ -42,7 +46,7 @@ ponder.on("matchingEngine:PairAdded", async ({ event, context }) => {
 });
 
 ponder.on("matchingEngine:OrderMatched", async ({ event, context }) => {
-  const { Order, Pair, DayBucket, HourBucket, MinBucket, Trade } = context.db;
+  const { BidOrder, AskOrder, Pair, DayBucket, HourBucket, MinBucket, Trade } = context.db;
 
   // Get Pair Info
   const pair = await Pair.findUnique({
@@ -65,47 +69,34 @@ ponder.on("matchingEngine:OrderMatched", async ({ event, context }) => {
   await OrderMatchedHandleTrade(event, pair, Trade);
 
   // Update Order info
-  await OrderMatchedHandleOrder(event, pair, Order);
+  // if matching order is buy
+  if(!event.args.isBid) {
+    await OrderMatchedHandleOrder(event, pair, BidOrder);
+  } else {
+    await OrderMatchedHandleOrder(event, pair, AskOrder);
+  }
+ 
 });
 
 ponder.on("matchingEngine:OrderPlaced", async ({ event, context }) => {
-  const { Order, Pair, OrderHistory } = context.db;
+  const { Account, BidOrder, AskOrder, Pair, BidOrderHistory, AskOrderHistory } = context.db;
   const pair = await Pair.findUnique({
     id: event.args.orderbook,
   });
-
-  await OrderPlacedHandleOrders(event, pair, Order, OrderHistory);
+  
+  if(event.args.isBid) {
+    await OrderPlacedHandleAccountOrders(event, pair, Account, BidOrder, BidOrderHistory);
+  } else {
+    await OrderPlacedHandleAccountOrders(event, pair, Account, AskOrder, AskOrderHistory);
+  }
 });
 
 ponder.on("matchingEngine:OrderCanceled", async ({ event, context }) => {
-  const { Order, OrderHistory } = context.db;
+  const { BidOrder, AskOrder, BidOrderHistory, AskOrderHistory } = context.db;
 
-  const id = event.args.owner
-    .concat("-")
-    .concat(event.args.orderbook)
-    .concat("-")
-    .concat(event.args.isBid.toString())
-    .concat("-")
-    .concat(event.args.id.toString());
-
-  const canceled = await OrderHistory.findUnique({
-    id,
-  });
-
-  if (canceled!.amount - event.args.amount == 0n) {
-    OrderHistory.delete({
-      id,
-    });
+  if(event.args.isBid) {
+    await OrderCanceledHandleOrder(event, BidOrder, BidOrderHistory);
   } else {
-    OrderHistory.update({
-      id,
-      data: {
-        amount: canceled!.amount - event.args.amount,
-      },
-    });
+    await OrderCanceledHandleOrder(event, AskOrder, AskOrderHistory);
   }
-
-  Order.delete({
-    id,
-  });
 });

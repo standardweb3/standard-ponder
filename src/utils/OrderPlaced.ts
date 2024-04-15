@@ -1,6 +1,6 @@
 import { formatUnits } from "viem";
 
-export const OrderPlacedHandleOrders = async (event: any, pair: any, Order: any, OrderHistory: any) => {
+export const OrderPlacedHandleAccountOrders = async (event: any, pair: any, Account: any, Order: any, OrderHistory: any) => {
     const id = event.args.owner
       .concat("-")
       .concat(event.args.orderbook)
@@ -11,6 +11,17 @@ export const OrderPlacedHandleOrders = async (event: any, pair: any, Order: any,
 
     const priceD = parseFloat(formatUnits(event.args.price, 8));
 
+    const timestamp = Number(event.block.timestamp)
+
+    await Account.upsert({
+        id: event.args.owner,
+        create: {
+            lastTraded: timestamp,
+        },
+        update: {
+            lastTraded: timestamp
+        }
+    })
 
     await Order.create({
       id,
@@ -19,6 +30,7 @@ export const OrderPlacedHandleOrders = async (event: any, pair: any, Order: any,
         isBid: event.args.isBid,
         base: pair!.base,
         quote: pair!.quote,
+        orderbook: event.args.orderbook,
         price: priceD,
         amount: event.args.withoutFee,
         placed: event.args.placed,
