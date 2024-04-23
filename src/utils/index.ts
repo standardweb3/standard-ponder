@@ -3,6 +3,7 @@ export {
   OrderMatchedHandleBuckets,
   OrderMatchedHandleOrder,
   OrderMatchedHandleTrade,
+  OrderMatchedHandleToken,
 } from "./OrderMatched";
 
 export {

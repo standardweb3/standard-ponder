@@ -1,4 +1,19 @@
 import { formatUnits } from "viem";
+import { Stablecoin } from "../consts/stablecoin";
+
+export const OrderMatchedHandleToken = async (event: any, pair: any, chainId: any, BaseToken: any) => {
+  const id = pair.base;
+
+  if(pair.quote === Stablecoin[chainId]) {
+    const priceD = parseFloat(formatUnits(event.args.price, 8));
+    BaseToken.update({
+      id,
+      data: {
+        price: priceD
+      }
+    });
+  }
+}
 
 const getVolume = (
   isBid: any,
@@ -39,6 +54,7 @@ const handleBucketInTime = async (
   await contextObj.upsert({
     id,
     create: {
+      orderbook: event.args.orderbook,
       open: priceD,
       close: priceD,
       low: priceD,
@@ -116,24 +132,28 @@ export const OrderMatchedHandleTrade = async (
   Trade.upsert({
     id,
     create: {
+      orderId: event.args.id,
       base: pair!.base,
       quote: pair!.quote,
-      isBid: !event.args.isBid,
+      isBid: event.args.isBid,
       price: priceD,
       amount: event.args.amount,
       taker: event.args.sender,
       maker: event.args.owner,
       timestamp: event.block.timestamp,
+      txHash: event.transaction.hash
     },
     update: {
+      orderId: event.args.id,
       base: pair!.base,
       quote: pair!.quote,
-      isBid: !event.args.isBid,
+      isBid: event.args.isBid,
       price: priceD,
       amount: event.args.amount,
       taker: event.args.sender,
       maker: event.args.owner,
       timestamp: event.block.timestamp,
+      txHash: event.transaction.hash
     },
   });
 };
@@ -151,8 +171,7 @@ export const OrderMatchedHandleOrder = async (
     .concat("-")
     .concat(event.args.id.toString());
 
-  const priceD = parseFloat(formatUnits(event.args.price, 8));
-
+  
   if (event.args.clear) {
     Order.delete({
       id,
@@ -161,16 +180,8 @@ export const OrderMatchedHandleOrder = async (
     Order.update({
       id,
       data: ({current}) => ({
-        orderId: current.id,
-        isBid: current.isBid,
-        base: pair!.base,
-        quote: pair!.quote,
-        orderbook: current.orderbook,
-        price: priceD,
-        amount: current.amount,
         placed: current.amount - event.args.amount,
         timestamp: event.block.timestamp,
-        maker: event.args.owner,
       }),
     });
   }

@@ -37,6 +37,7 @@ export const OrderPlacedHandleAccountOrders = async (event: any, pair: any, Acco
         placed: event.args.placed,
         timestamp: event.block.timestamp,
         maker: event.args.owner,
+        txHash: event.transaction.hash
       },
       update: {
         orderId: event.args.id,
@@ -49,6 +50,7 @@ export const OrderPlacedHandleAccountOrders = async (event: any, pair: any, Acco
         placed: event.args.placed,
         timestamp: event.block.timestamp,
         maker: event.args.owner,
+        txHash: event.transaction.hash
       }
     });
 
@@ -65,6 +67,7 @@ export const OrderPlacedHandleAccountOrders = async (event: any, pair: any, Acco
         amount: event.args.withoutFee,
         timestamp: event.block.timestamp,
         maker: event.args.owner,
+        txHash: event.transaction.hash
       },
       update: {
         orderId: event.args.id,
@@ -76,6 +79,7 @@ export const OrderPlacedHandleAccountOrders = async (event: any, pair: any, Acco
         amount: event.args.withoutFee,
         timestamp: event.block.timestamp,
         maker: event.args.owner,
+        txHash: event.transaction.hash
       },
     });
   };

@@ -4,6 +4,8 @@ export default createSchema((p) => ({
   MinBucket: p.createTable({
     /// {base address}-{quote address}-{min}
     id: p.string(),
+    /// orderbook contract address
+    orderbook: p.string().references("Pair.id"),
     /// open price in 1 min related to asset
     open: p.float(),
     /// high price in 1 min related to asset
@@ -26,6 +28,8 @@ export default createSchema((p) => ({
   HourBucket: p.createTable({
     /// {base address}-{quote address}-{hour}
     id: p.string(),
+    /// orderbook contract address
+    orderbook: p.string().references("Pair.id"),
     /// open price in 24 hours related to asset
     open: p.float(),
     /// high price in 24 hours related to asset
@@ -48,6 +52,8 @@ export default createSchema((p) => ({
   DayBucket: p.createTable({
     /// {base address}-{quote address}-{hour}
     id: p.string(),
+    /// orderbook contract address
+    orderbook: p.string().references("Pair.id"),
     /// open price in 24 hours related to asset
     open: p.float(),
     /// high price in 24 hours related to asset
@@ -84,6 +90,8 @@ export default createSchema((p) => ({
   Trade: p.createTable({
     /// identifier for a trade
     id: p.string(),
+    /// order id which was matched
+    orderId: p.bigint(),
     /// base info
     base: p.string(),
     /// quote info
@@ -99,7 +107,9 @@ export default createSchema((p) => ({
     /// taker of the matched order in the orderbook
     taker: p.string(),
     /// maker of the matched order in the orderbook
-    maker: p.string()
+    maker: p.string(),
+    /// transaction hash
+    txHash: p.string()
   }),
   Account: p.createTable({
     /// account wallet address
@@ -135,7 +145,13 @@ export default createSchema((p) => ({
     /// buy history
     buys: p.many("BidOrderHistory.orderbook"),
     /// sell history
-    sells: p.many("AskOrderHistory.orderbook")
+    sells: p.many("AskOrderHistory.orderbook"),
+    /// aggregated info per min
+    minBuckets: p.many("MinBucket.orderbook"),
+    /// aggregated info per hour
+    hourBuckets: p.many("HourBucket.orderbook"),
+    /// aggregated info per day
+    DayBuckets: p.many("DayBucket.orderbook")
   }),
   BidOrderHistory: p.createTable({
     // a unique identifier
@@ -158,6 +174,8 @@ export default createSchema((p) => ({
     timestamp: p.bigint(),
     /// wallet address who made an order
     maker: p.string().references("Account.id"),
+    /// transaction hash 
+    txHash: p.string()
   }),
   AskOrderHistory: p.createTable({
     // a unique identifier
@@ -180,6 +198,8 @@ export default createSchema((p) => ({
     timestamp: p.bigint(),
     /// wallet address who made an order
     maker: p.string().references("Account.id"),
+    /// transaction hash
+    txHash: p.string()
   }),
   BidOrder: p.createTable({
     /// a unique identifier
@@ -204,6 +224,8 @@ export default createSchema((p) => ({
     timestamp: p.bigint(),
     /// wallet address who made an order
     maker: p.string().references("Account.id"),
+    /// transaction hash
+    txHash: p.string()
   }),
   AskOrder: p.createTable({
     /// a unique identifier
@@ -228,6 +250,8 @@ export default createSchema((p) => ({
     timestamp: p.bigint(),
     /// wallet address who made an order
     maker: p.string().references("Account.id"),
+    /// transaction Hash
+    txHash: p.string()
   }),
 }));
 

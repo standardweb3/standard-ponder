@@ -2,7 +2,6 @@ export const PairAddedHandleTokenPairOrderbook = async (
   event: any,
   Token: any,
   Pair: any,
-  Orderbook: any,
 ) => {
   
 
