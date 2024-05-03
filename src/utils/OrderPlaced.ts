@@ -17,10 +17,14 @@ export const OrderPlacedHandleAccountOrders = async (event: any, pair: any, Acco
         id: event.args.owner,
         create: {
             lastTraded: timestamp,
+            orders: 1,
+            orderHistory: 1
         },
-        update: {
-            lastTraded: timestamp
-        }
+        update: ({current}) => ({
+            lastTraded: timestamp,
+            orders: current.orders + 1,
+            orderHistory: current.orderHistory + 1
+        })
     })
 
     // upsert Order as the order rewrites on the id circulating with uint32.max

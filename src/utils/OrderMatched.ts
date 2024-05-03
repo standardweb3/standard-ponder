@@ -1,19 +1,24 @@
 import { formatUnits } from "viem";
 import { Stablecoin } from "../consts/stablecoin";
 
-export const OrderMatchedHandleToken = async (event: any, pair: any, chainId: any, BaseToken: any) => {
+export const OrderMatchedHandleToken = async (
+  event: any,
+  pair: any,
+  chainId: any,
+  BaseToken: any
+) => {
   const id = pair.base;
 
-  if(pair.quote === Stablecoin[chainId]) {
+  if (pair.quote === Stablecoin[chainId]) {
     const priceD = parseFloat(formatUnits(event.args.price, 8));
     BaseToken.update({
       id,
       data: {
-        price: priceD
-      }
+        price: priceD,
+      },
     });
   }
-}
+};
 
 const getVolume = (
   isBid: any,
@@ -48,8 +53,13 @@ const handleBucketInTime = async (
 
   const priceD = parseFloat(formatUnits(event.args.price, 8));
   const matchedOrderType = !event.args.isBid;
-  
-  const volume = getVolume(matchedOrderType, event.args.amount, pair.bDecimal, pair.qDecimal);
+
+  const volume = getVolume(
+    matchedOrderType,
+    event.args.amount,
+    pair.bDecimal,
+    pair.qDecimal
+  );
 
   await contextObj.upsert({
     id,
@@ -91,7 +101,7 @@ export const OrderMatchedHandleDayBuckets = async (
   pair: any,
   DayBucket: any
 ) => {
-  await handleBucketInTime(event, pair, 60*60*24, DayBucket);
+  await handleBucketInTime(event, pair, 60 * 60 * 24, DayBucket);
 };
 
 export const OrderMatchedHandleHourBuckets = async (
@@ -99,7 +109,7 @@ export const OrderMatchedHandleHourBuckets = async (
   pair: any,
   HourBucket: any
 ) => {
-  await handleBucketInTime(event, pair, 60*60, HourBucket);
+  await handleBucketInTime(event, pair, 60 * 60, HourBucket);
 };
 
 export const OrderMatchedHandleBuckets = async (
@@ -116,6 +126,8 @@ export const OrderMatchedHandleBuckets = async (
 
 export const OrderMatchedHandleTrade = async (
   event: any,
+  chainId: any,
+  Analysis: any,
   pair: any,
   Trade: any
 ) => {
@@ -129,7 +141,7 @@ export const OrderMatchedHandleTrade = async (
   const priceD = parseFloat(formatUnits(event.args.price, 8));
 
   // upsert Trade as the order rewrites on the id circulating with uint32.max
-  Trade.upsert({
+  await Trade.upsert({
     id,
     create: {
       orderId: event.args.id,
@@ -141,7 +153,7 @@ export const OrderMatchedHandleTrade = async (
       taker: event.args.sender,
       maker: event.args.owner,
       timestamp: event.block.timestamp,
-      txHash: event.transaction.hash
+      txHash: event.transaction.hash,
     },
     update: {
       orderId: event.args.id,
@@ -153,14 +165,26 @@ export const OrderMatchedHandleTrade = async (
       taker: event.args.sender,
       maker: event.args.owner,
       timestamp: event.block.timestamp,
-      txHash: event.transaction.hash
+      txHash: event.transaction.hash,
     },
+  });
+
+  await Analysis.upsert({
+    id: chainId,
+    create: {
+      totalTrades: 1,
+    },
+    update: ({ current }) => ({
+      totalTrades: current.totalTrades + 1,
+    }),
   });
 };
 
 export const OrderMatchedHandleOrder = async (
   event: any,
-  pair: any,
+  chainId: any,
+  Analysis: any,
+  Account: any,
   Order: any
 ) => {
   const id = event.args.owner
@@ -171,15 +195,20 @@ export const OrderMatchedHandleOrder = async (
     .concat("-")
     .concat(event.args.id.toString());
 
-  
   if (event.args.clear) {
-    Order.delete({
+    await Order.delete({
       id,
     });
+    Account.update({
+      id: event.args.owner,
+      data: ({ current }) => ({
+        orders: current.orders - 1,
+      }),
+    });
   } else {
-    Order.update({
+    await Order.update({
       id,
-      data: ({current}) => ({
+      data: ({ current }) => ({
         placed: current.amount - event.args.amount,
         timestamp: event.block.timestamp,
       }),

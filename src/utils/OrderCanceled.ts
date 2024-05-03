@@ -1,5 +1,6 @@
 export const OrderCanceledHandleOrder = async (
   event: any,
+  Account: any, 
   Order: any,
   OrderHistory: any
 ) => {
@@ -16,11 +17,11 @@ export const OrderCanceledHandleOrder = async (
   });
 
   if (canceled!.amount - event.args.amount == 0n) {
-    OrderHistory.delete({
+    await OrderHistory.delete({
       id,
     });
   } else {
-    OrderHistory.update({
+    await OrderHistory.update({
       id,
       data: {
         amount: canceled!.amount - event.args.amount,
@@ -28,7 +29,15 @@ export const OrderCanceledHandleOrder = async (
     });
   }
 
-  Order.delete({
+  await Account.update({
+    id: event.args.owner,
+    data: ({current}) => ({
+      orders: current.orders - 1,
+      orderHistory: current.orderHistory - 1
+    }),
+  })
+
+  await Order.delete({
     id,
   });
 };

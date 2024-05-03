@@ -1,6 +1,11 @@
 import { createSchema } from "@ponder/core";
 
 export default createSchema((p) => ({
+  Analysis: p.createTable({
+    id: p.int(),
+    totalTrades: p.int(),
+    totalPairs: p.int(),
+  }),
   MinBucket: p.createTable({
     /// {base address}-{quote address}-{min}
     id: p.string(),
@@ -100,7 +105,7 @@ export default createSchema((p) => ({
     isBid: p.boolean(),
     /// price in 8 decimals
     price: p.float(),
-    /// traded base token amount
+    /// traded base token amount on isBid == false, traded quote token amount on isBid == true
     amount: p.bigint(),
     /// submitted timestamp
     timestamp: p.bigint(),
@@ -123,7 +128,11 @@ export default createSchema((p) => ({
     /// bid orders that are already matched or canceled
     bidOrderHistory: p.many("BidOrderHistory.maker"),
     /// ask orders that are already matched or canceled
-    askOrderHistory: p.many("AskOrderHistory.maker")
+    askOrderHistory: p.many("AskOrderHistory.maker"),
+    /// total orders that a user has currently
+    orders: p.int(),
+    /// total order history that a user has currently
+    orderHistory: p.int()
   }),
   Pair: p.createTable({
     /// orderbook contract address

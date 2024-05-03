@@ -1,8 +1,21 @@
 export const PairAddedHandleTokenPairOrderbook = async (
   event: any,
+  chainId: any,
+  Analysis: any,
   Token: any,
   Pair: any,
 ) => {
+
+  await Analysis.upsert({
+    id: chainId,
+    create: {
+      totalTrades: 0,
+      totalPairs: 1
+    },
+    update: ({ current }) => ({
+      totalPairs: current.totalPairs + 1
+    })
+  });
   
 
   await Token.create({
