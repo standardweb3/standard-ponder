@@ -83,8 +83,8 @@ const handleBucketInTime = async (
       average:
         (current.average * current.count + priceD) / (current.count + 1),
       count: current.count + 1,
-      baseVolume: matchedOrderType == false ? current.baseVolume + volume : 0,
-      quoteVolume: matchedOrderType == true ? current.quoteVolume + volume : 0,
+      baseVolume: matchedOrderType == false ? current.baseVolume + volume : current.baseVolume,
+      quoteVolume: matchedOrderType == true ? current.quoteVolume + volume : current.quoteVolume,
     }),
   });
 };
