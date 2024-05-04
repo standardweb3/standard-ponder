@@ -50,8 +50,9 @@ const handleBucketInTime = async (
     .concat(pair!.quote)
     .concat("-")
     .concat(aggregatedTime.toString());
-
+  
   const priceD = parseFloat(formatUnits(event.args.price, 8));
+
   const matchedOrderType = !event.args.isBid;
 
   const volume = getVolume(
@@ -80,7 +81,7 @@ const handleBucketInTime = async (
       low: current.low > priceD ? priceD : current.low,
       high: current.high < priceD ? priceD : current.high,
       average:
-        (current.average * current.count + priceD) / (current.count + 1n),
+        (current.average * current.count + priceD) / (current.count + 1),
       count: current.count + 1,
       baseVolume: matchedOrderType == false ? current.baseVolume + volume : 0,
       quoteVolume: matchedOrderType == true ? current.quoteVolume + volume : 0,
