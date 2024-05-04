@@ -17,7 +17,7 @@ export default createConfig({
   contracts: {
     matchingEngine: {
       abi: MatchingEngineABI,
-      address: "0x8D44C188E64045b64879fc7FD9fa80d81AbF9942",
+      address: "0x5Fb6d8e80Aa8829e41053898B8C756E1cdAcbFD9",
       network: {
         blast: {
           startBlock: 2094834,
