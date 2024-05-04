@@ -28,35 +28,39 @@ export const OrderPlacedHandleAccountOrders = async (event: any, pair: any, Acco
     })
 
     // upsert Order as the order rewrites on the id circulating with uint32.max
-    await Order.upsert({
-      id,
-      create: {
-        orderId: event.args.id,
-        isBid: event.args.isBid,
-        base: pair!.base,
-        quote: pair!.quote,
-        orderbook: event.args.orderbook,
-        price: priceD,
-        amount: event.args.withoutFee,
-        placed: event.args.placed,
-        timestamp: event.block.timestamp,
-        maker: event.args.owner,
-        txHash: event.transaction.hash
-      },
-      update: {
-        orderId: event.args.id,
-        isBid: event.args.isBid,
-        base: pair!.base,
-        quote: pair!.quote,
-        orderbook: event.args.orderbook,
-        price: priceD,
-        amount: event.args.withoutFee,
-        placed: event.args.placed,
-        timestamp: event.block.timestamp,
-        maker: event.args.owner,
-        txHash: event.transaction.hash
-      }
-    });
+
+    if(event.args.placed > 0) {
+      await Order.upsert({
+        id,
+        create: {
+          orderId: event.args.id,
+          isBid: event.args.isBid,
+          base: pair!.base,
+          quote: pair!.quote,
+          orderbook: event.args.orderbook,
+          price: priceD,
+          amount: event.args.withoutFee,
+          placed: event.args.placed,
+          timestamp: event.block.timestamp,
+          maker: event.args.owner,
+          txHash: event.transaction.hash
+        },
+        update: {
+          orderId: event.args.id,
+          isBid: event.args.isBid,
+          base: pair!.base,
+          quote: pair!.quote,
+          orderbook: event.args.orderbook,
+          price: priceD,
+          amount: event.args.withoutFee,
+          placed: event.args.placed,
+          timestamp: event.block.timestamp,
+          maker: event.args.owner,
+          txHash: event.transaction.hash
+        }
+      });
+    }
+   
 
     // upsert OrderHistory as the order rewrites on the id circulating with uint32.max
     await OrderHistory.upsert({
