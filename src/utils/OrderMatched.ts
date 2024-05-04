@@ -196,7 +196,11 @@ export const OrderMatchedHandleOrder = async (
     .concat("-")
     .concat(event.args.id.toString());
 
-  if (event.args.clear) {
+  const order = await Order.findUnique({
+    id,
+  });
+
+  if (event.args.clear || order.placed - event.args.amount == 0) {
     await Order.delete({
       id,
     });
@@ -209,10 +213,10 @@ export const OrderMatchedHandleOrder = async (
   } else {
     await Order.update({
       id,
-      data: ({ current }) => ({
-        placed: current.amount - event.args.amount,
+      data: {
+        placed: order.amount - event.args.amount,
         timestamp: event.block.timestamp,
-      }),
+      },
     });
   }
 };
