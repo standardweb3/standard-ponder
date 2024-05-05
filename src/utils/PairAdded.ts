@@ -17,7 +17,7 @@ export const PairAddedHandleTokenPairOrderbook = async (
     })
   });
   
-
+  
   await Token.create({
     id: event.args.base,
     data: {
