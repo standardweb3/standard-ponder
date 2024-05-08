@@ -11,7 +11,7 @@ import {
   PairAddedHandleTokenPairOrderbook,
 } from "./utils";
 
-const knock = new Knock(process.env.KNOCK_API_KEY);
+// const knock = new Knock(process.env.KNOCK_API_KEY);
 
 ponder.on("matchingEngine:PairAdded", async ({ event, context }) => {
   const { Analysis, Token, Pair } = context.db;
