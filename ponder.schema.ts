@@ -2,7 +2,7 @@ import { createSchema } from "@ponder/core";
 
 export default createSchema((p) => ({
   Analysis: p.createTable({
-    id: p.int(),
+    id: p.string(),
     totalTrades: p.int(),
     totalPairs: p.int(),
   }),

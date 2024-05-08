@@ -15,7 +15,7 @@ export default createConfig({
       address: process.env.CONTRACT,
       network: {
         deployed: {
-          startBlock: process.env.STARTBLOCK,
+          startBlock: parseInt(process.env.STARTBLOCK),
         }
       }
     }
