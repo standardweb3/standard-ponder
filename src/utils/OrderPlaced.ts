@@ -20,7 +20,7 @@ export const OrderPlacedHandleAccountOrders = async (event: any, pair: any, Acco
             orders: 1,
             orderHistory: 1
         },
-        update: ({current}) => ({
+        update: ({current}: any) => ({
             lastTraded: timestamp,
             orders: current.orders + 1,
             orderHistory: current.orderHistory + 1
@@ -29,7 +29,7 @@ export const OrderPlacedHandleAccountOrders = async (event: any, pair: any, Acco
 
     // upsert Order as the order rewrites on the id circulating with uint32.max
 
-    if(event.args.placed > 0) {
+    if(event.args.placed > 0n) {
       await Order.upsert({
         id,
         create: {

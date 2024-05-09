@@ -383,7 +383,7 @@ export const MatchingEngineABI = [
         "type": "address",
         "internalType": "address"
       },
-      { "name": "treasury_", "type": "address", "internalType": "address" },
+      { "name": "feeTo_", "type": "address", "internalType": "address" },
       { "name": "WETH_", "type": "address", "internalType": "address" }
     ],
     "outputs": [],
@@ -601,9 +601,7 @@ export const MatchingEngineABI = [
     "inputs": [
       { "name": "feeTo_", "type": "address", "internalType": "address" }
     ],
-    "outputs": [
-      { "name": "success", "type": "bool", "internalType": "bool" }
-    ],
+    "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
     "stateMutability": "nonpayable"
   },
   {
@@ -615,9 +613,7 @@ export const MatchingEngineABI = [
       { "name": "market", "type": "uint32", "internalType": "uint32" },
       { "name": "limit", "type": "uint32", "internalType": "uint32" }
     ],
-    "outputs": [
-      { "name": "success", "type": "bool", "internalType": "bool" }
-    ],
+    "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
     "stateMutability": "nonpayable"
   },
   {
@@ -1002,6 +998,15 @@ export const MatchingEngineABI = [
     "inputs": [
       { "name": "amount", "type": "uint256", "internalType": "uint256" },
       { "name": "minRequired", "type": "uint256", "internalType": "uint256" }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "PairDoesNotExist",
+    "inputs": [
+      { "name": "base", "type": "address", "internalType": "address" },
+      { "name": "quote", "type": "address", "internalType": "address" },
+      { "name": "pair", "type": "address", "internalType": "address" }
     ]
   },
   {

@@ -12,6 +12,7 @@ export const PairAddedHandleTokenPairOrderbook = async (
       totalTrades: 0,
       totalPairs: 1
     },
+    // @ts-ignore
     update: ({ current }) => ({
       totalPairs: current.totalPairs + 1
     })

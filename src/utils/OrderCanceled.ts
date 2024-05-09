@@ -16,7 +16,7 @@ export const OrderCanceledHandleOrder = async (
     id,
   });
 
-  if (canceled!.amount - event.args.amount == 0n) {
+  if (canceled == null || canceled!.amount - event.args.amount == 0) {
     await OrderHistory.delete({
       id,
     });
@@ -29,13 +29,20 @@ export const OrderCanceledHandleOrder = async (
     });
   }
 
-  await Account.update({
+  const account = await Account.findUnique({
     id: event.args.owner,
-    data: ({current}) => ({
-      orders: current.orders - 1,
-      orderHistory: current.orderHistory - 1
-    }),
-  })
+  });
+  
+  if (account != null ) {
+    await Account.update({
+      id: event.args.owner,
+      data: ({current}: any) => ({
+        orders: current.orders - 1,
+        orderHistory: current.orderHistory - 1
+      }),
+    })
+  }
+  
 
   await Order.delete({
     id,
