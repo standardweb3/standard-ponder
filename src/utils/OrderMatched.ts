@@ -76,7 +76,7 @@ const handleBucketInTime = async (
       quoteVolume: matchedOrderType == false ? volume : volume * priceD,
       timestamp: aggregatedTime,
     },
-    update: ({ current }) => ({
+    update: ({ current }: any) => ({
       close: priceD,
       low: current.low > priceD ? priceD : current.low,
       high: current.high < priceD ? priceD : current.high,
@@ -175,7 +175,7 @@ export const OrderMatchedHandleTrade = async (
     create: {
       totalTrades: 1,
     },
-    update: ({ current }) => ({
+    update: ({ current }: any) => ({
       totalTrades: current.totalTrades + 1,
     }),
   });
@@ -206,7 +206,7 @@ export const OrderMatchedHandleOrder = async (
     });
     Account.update({
       id: event.args.owner,
-      data: ({ current }) => ({
+      data: ({ current }: any) => ({
         orders: current.orders - 1,
       }),
     });

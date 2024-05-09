@@ -1,6 +1,6 @@
 export const OrderCanceledHandleOrder = async (
   event: any,
-  Account: any, 
+  Account: any,
   Order: any,
   OrderHistory: any
 ) => {
@@ -29,20 +29,13 @@ export const OrderCanceledHandleOrder = async (
     });
   }
 
-  const account = await Account.findUnique({
+  await Account.update({
     id: event.args.owner,
+    data: ({ current }: any) => ({
+      orders: current.orders - 1,
+      orderHistory: current.orderHistory - 1,
+    }),
   });
-  
-  if (account != null ) {
-    await Account.update({
-      id: event.args.owner,
-      data: ({current}: any) => ({
-        orders: current.orders - 1,
-        orderHistory: current.orderHistory - 1
-      }),
-    })
-  }
-  
 
   await Order.delete({
     id,
