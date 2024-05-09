@@ -67,9 +67,9 @@ ponder.on("matchingEngine:OrderMatched", async ({ event, context }) => {
   // Update Order info
   // if matching order is buy
   if (!event.args.isBid) {
-    await OrderMatchedHandleOrder(event, chainId, Analysis, Account, BidOrder);
+    await OrderMatchedHandleOrder(event, chainId, Analysis, pair, Account, BidOrder);
   } else {
-    await OrderMatchedHandleOrder(event, chainId, Analysis, Account, AskOrder);
+    await OrderMatchedHandleOrder(event, chainId, Analysis, pair, Account, AskOrder);
   }
 });
 

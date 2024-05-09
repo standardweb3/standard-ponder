@@ -185,6 +185,7 @@ export const OrderMatchedHandleOrder = async (
   event: any,
   chainId: any,
   Analysis: any,
+  pair: any,
   Account: any,
   Order: any
 ) => {
@@ -211,10 +212,15 @@ export const OrderMatchedHandleOrder = async (
       }),
     });
   } else {
+    // if isBid is true, quote amount is in event, if isBid is false, base amount is in event
+    // the amount to match with in case of isBid=true is baseAmount, the amount to match with in case of isBid=false is quoteAmount
+    // normalize the amount with appropriate decimal
+    const normalized = getVolume(event.args.isBid, event.args.amount, pair.bDecimal, pair.qDecimal);
+    const decrease = event.args.isBid ? normalized / order.price : normalized * order.price;
     await Order.update({
       id,
       data: {
-        placed: order.amount <= event.args.amount ? order.amount - event.args.amount : 0,
+        placed: order.amount <= decrease ? order.amount - decrease : 0n,
         timestamp: event.block.timestamp,
       },
     });
