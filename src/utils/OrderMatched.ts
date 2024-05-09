@@ -214,7 +214,7 @@ export const OrderMatchedHandleOrder = async (
     await Order.update({
       id,
       data: {
-        placed: order.amount - event.args.amount,
+        placed: order.amount <= event.args.amount ? order.amount - event.args.amount : 0,
         timestamp: event.block.timestamp,
       },
     });
