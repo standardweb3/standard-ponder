@@ -5,7 +5,7 @@ import { MatchingEngineABI } from "./abis/matchingengineAbi";
 export default createConfig({
   networks: {
     deployed: {
-      chainId: parseFloat(process.env.CHAINID!),
+      chainId: parseInt(process.env.CHAINID!),
       transport: http(process.env.RPC)
     }
   },
@@ -15,7 +15,7 @@ export default createConfig({
       address: process.env.CONTRACT,
       network: {
         deployed: {
-          startBlock: process.env.STARTBLOCK,
+          startBlock: parseInt(process.env.STARTBLOCK),
         }
       }
     }
