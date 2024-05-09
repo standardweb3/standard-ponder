@@ -112,11 +112,16 @@ ponder.on("matchingEngine:OrderCanceled", async ({ event, context }) => {
     BidOrderHistory,
     AskOrderHistory,
     Account,
+    Pair
   } = context.db;
+  const pair = await Pair.findUnique({
+    id: event.args.orderbook,
+  })
   if (event.args.isBid) {
     await OrderCanceledHandleOrder(
       event,
       Account,
+      pair,
       BidOrder,
       BidOrderHistory
     );
@@ -124,6 +129,7 @@ ponder.on("matchingEngine:OrderCanceled", async ({ event, context }) => {
     await OrderCanceledHandleOrder(
       event,
       Account,
+      pair,
       AskOrder,
       AskOrderHistory
     );

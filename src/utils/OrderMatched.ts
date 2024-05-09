@@ -140,6 +140,7 @@ export const OrderMatchedHandleTrade = async (
     .concat(event.args.id.toString());
 
   const priceD = parseFloat(formatUnits(event.args.price, 8));
+  const amountD = getVolume(event.args.isBid, event.args.amount, pair.bDecimal, pair.qDecimal);
 
   // upsert Trade as the order rewrites on the id circulating with uint32.max
   await Trade.upsert({
@@ -150,7 +151,7 @@ export const OrderMatchedHandleTrade = async (
       quote: pair!.quote,
       isBid: event.args.isBid,
       price: priceD,
-      amount: event.args.amount,
+      amount: amountD,
       taker: event.args.sender,
       maker: event.args.owner,
       timestamp: event.block.timestamp,
@@ -162,7 +163,7 @@ export const OrderMatchedHandleTrade = async (
       quote: pair!.quote,
       isBid: event.args.isBid,
       price: priceD,
-      amount: event.args.amount,
+      amount: amountD,
       taker: event.args.sender,
       maker: event.args.owner,
       timestamp: event.block.timestamp,
@@ -220,7 +221,7 @@ export const OrderMatchedHandleOrder = async (
     await Order.update({
       id,
       data: {
-        placed: order.amount <= decrease ? order.amount - decrease : 0n,
+        placed: order.amount <= decrease ? order.amount - decrease : 0.001,
         timestamp: event.block.timestamp,
       },
     });

@@ -1,5 +1,20 @@
 import { formatUnits } from "viem";
 
+const getVolume = (
+  isBid: any,
+  amount: bigint,
+  bDecimal: any,
+  qDecimal: any
+) => {
+  if (isBid) {
+    const quoteD = formatUnits(amount, qDecimal);
+    return parseFloat(quoteD);
+  } else {
+    const baseD = formatUnits(amount, bDecimal);
+    return parseFloat(baseD);
+  }
+};
+
 export const OrderPlacedHandleAccountOrders = async (
   event: any,
   pair: any,
@@ -16,6 +31,10 @@ export const OrderPlacedHandleAccountOrders = async (
     .concat(event.args.id.toString());
 
   const priceD = parseFloat(formatUnits(event.args.price, 8));
+
+  const amountD = getVolume(event.args.isBid, event.args.withoutFee, pair.bDecimal, pair.qDecimal);
+
+  const placedD = getVolume(event.args.isBid, event.args.placed, pair.bDecimal, pair.qDecimal);
 
   const timestamp = Number(event.block.timestamp);
 
@@ -44,8 +63,8 @@ export const OrderPlacedHandleAccountOrders = async (
       quote: pair!.quote,
       orderbook: event.args.orderbook,
       price: priceD,
-      amount: event.args.withoutFee,
-      placed: event.args.placed,
+      amount: amountD,
+      placed: placedD,
       timestamp: event.block.timestamp,
       maker: event.args.owner,
       txHash: event.transaction.hash,
@@ -57,8 +76,8 @@ export const OrderPlacedHandleAccountOrders = async (
       quote: pair!.quote,
       orderbook: event.args.orderbook,
       price: priceD,
-      amount: event.args.withoutFee,
-      placed: event.args.placed,
+      amount: amountD,
+      placed: placedD,
       timestamp: event.block.timestamp,
       maker: event.args.owner,
       txHash: event.transaction.hash,
@@ -75,7 +94,7 @@ export const OrderPlacedHandleAccountOrders = async (
       quote: pair!.quote,
       orderbook: event.args.orderbook,
       price: priceD,
-      amount: event.args.withoutFee,
+      amount: amountD,
       timestamp: event.block.timestamp,
       maker: event.args.owner,
       txHash: event.transaction.hash,
@@ -87,7 +106,7 @@ export const OrderPlacedHandleAccountOrders = async (
       quote: pair!.quote,
       orderbook: event.args.orderbook,
       price: priceD,
-      amount: event.args.withoutFee,
+      amount: amountD,
       timestamp: event.block.timestamp,
       maker: event.args.owner,
       txHash: event.transaction.hash,

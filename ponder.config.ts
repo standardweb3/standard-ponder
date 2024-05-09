@@ -12,10 +12,10 @@ export default createConfig({
   contracts: {
     matchingEngine: {
       abi: MatchingEngineABI,
-      address: process.env.CONTRACT,
+      address: process.env.CONTRACT as `0x${string}`,
       network: {
         deployed: {
-          startBlock: parseInt(process.env.STARTBLOCK),
+          startBlock: parseInt(process.env.STARTBLOCK as string),
         }
       }
     }

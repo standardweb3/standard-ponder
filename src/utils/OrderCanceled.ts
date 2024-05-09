@@ -1,6 +1,9 @@
+import { formatUnits } from "viem";
+
 export const OrderCanceledHandleOrder = async (
   event: any,
   Account: any,
+  pair: any,
   Order: any,
   OrderHistory: any
 ) => {
@@ -16,7 +19,9 @@ export const OrderCanceledHandleOrder = async (
     id,
   });
 
-  if (canceled == null || canceled!.amount - event.args.amount == 0) {
+  const amountD = getVolume(event.args.isBid, event.args.amount, pair.bDecimal, pair.qDecimal);
+
+  if (canceled!.amount - amountD <= 0) {
     await OrderHistory.delete({
       id,
     });
@@ -24,7 +29,7 @@ export const OrderCanceledHandleOrder = async (
     await OrderHistory.update({
       id,
       data: {
-        amount: canceled!.amount - event.args.amount,
+        amount: canceled!.amount - amountD,
       },
     });
   }
@@ -40,4 +45,19 @@ export const OrderCanceledHandleOrder = async (
   await Order.delete({
     id,
   });
+};
+
+const getVolume = (
+  isBid: any,
+  amount: bigint,
+  bDecimal: any,
+  qDecimal: any
+) => {
+  if (isBid) {
+    const quoteD = formatUnits(amount, qDecimal);
+    return parseFloat(quoteD);
+  } else {
+    const baseD = formatUnits(amount, bDecimal);
+    return parseFloat(baseD);
+  }
 };

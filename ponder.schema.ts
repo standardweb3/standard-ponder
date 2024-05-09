@@ -106,7 +106,7 @@ export default createSchema((p) => ({
     /// price in 8 decimals
     price: p.float(),
     /// traded base token amount on isBid == false, traded quote token amount on isBid == true
-    amount: p.bigint(),
+    amount: p.float(),
     /// submitted timestamp
     timestamp: p.bigint(),
     /// taker of the matched order in the orderbook
@@ -178,7 +178,7 @@ export default createSchema((p) => ({
     /// price in 8 decimals
     price: p.float(),
     /// deposit asset amount
-    amount: p.bigint(),
+    amount: p.float(),
     /// submitted timestamp
     timestamp: p.bigint(),
     /// wallet address who made an order
@@ -202,7 +202,7 @@ export default createSchema((p) => ({
     /// price in 8 decimals
     price: p.float(),
     /// deposit asset amount
-    amount: p.bigint(),
+    amount: p.float(),
     /// submitted timestamp
     timestamp: p.bigint(),
     /// wallet address who made an order
@@ -226,9 +226,9 @@ export default createSchema((p) => ({
     /// price in 8 decimals
     price: p.float(),
     /// deposit asset amount
-    amount: p.bigint(),
+    amount: p.float(),
     /// placed asset amount
-    placed: p.bigint(),
+    placed: p.float(),
     /// submitted timestamp
     timestamp: p.bigint(),
     /// wallet address who made an order
@@ -252,9 +252,9 @@ export default createSchema((p) => ({
     /// price in 8 decimals
     price: p.float(),
     /// deposit asset amount
-    amount: p.bigint(),
+    amount: p.float(),
     /// placed asset amount
-    placed: p.bigint(),
+    placed: p.float(),
     /// submitted timestamp
     timestamp: p.bigint(),
     /// wallet address who made an order
