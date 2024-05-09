@@ -200,7 +200,7 @@ export const OrderMatchedHandleOrder = async (
     id,
   });
 
-  if (event.args.clear || order.placed - event.args.amount <= 0) {
+  if (event.args.clear) {
     await Order.delete({
       id,
     });
