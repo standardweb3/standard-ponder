@@ -55,12 +55,19 @@ const handleBucketInTime = async (
 
   const matchedOrderType = event.args.isBid;
 
+  // true then quote volume, false then base volume
   const volume = getVolume(
     matchedOrderType,
     event.args.amount,
     pair.bDecimal,
     pair.qDecimal
   );
+
+  // true then base volume, false then quote volume
+  const counterVolume = matchedOrderType == true ? volume / priceD : volume * priceD
+
+  const baseVolume = matchedOrderType == true ? counterVolume : volume;
+  const quoteVolume = matchedOrderType == false ? counterVolume : volume;
 
   await contextObj.upsert({
     id,
@@ -72,8 +79,8 @@ const handleBucketInTime = async (
       high: priceD,
       average: priceD,
       count: 1,
-      baseVolume: matchedOrderType == true ? volume : volume * priceD,
-      quoteVolume: matchedOrderType == false ? volume : volume / priceD,
+      baseVolume,
+      quoteVolume,
       timestamp: aggregatedTime,
     },
     update: ({ current }: any) => ({
@@ -83,8 +90,8 @@ const handleBucketInTime = async (
       average:
         (current.average * current.count + priceD) / (current.count + 1),
       count: current.count + 1,
-      baseVolume: matchedOrderType == true ? current.quoteVolume + volume : current.quoteVolume + volume * priceD, 
-      quoteVolume: matchedOrderType == false ? current.baseVolume + volume : current.baseVolume + volume / priceD,
+      baseVolume: current.baseVolume + baseVolume,
+      quoteVolume: current.quoteVolume + quoteVolume,
     }), 
   });
 };
