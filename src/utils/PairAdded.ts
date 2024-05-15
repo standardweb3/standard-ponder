@@ -19,21 +19,31 @@ export const PairAddedHandleTokenPairOrderbook = async (
   });
   
   
-  await Token.create({
+  await Token.upsert({
     id: event.args.base,
-    data: {
+    create: {
       price: 0,
       cgPrice: 0.0,
       cgId: "",
     },
+    update: {
+      price: 0,
+      cgPrice: 0.0,
+      cgId: "",
+    }
   });
-  await Token.create({
+  await Token.upsert({
     id: event.args.quote,
-    data: {
+    create: {
       price: 0,
       cgPrice: 0.0,
       cgId: "",
     },
+    update: {
+      price: 0,
+      cgPrice: 0.0,
+      cgId: "",
+    }
   });
 
   const id = event.args.orderbook;
