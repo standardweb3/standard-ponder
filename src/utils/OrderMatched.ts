@@ -53,7 +53,7 @@ const handleBucketInTime = async (
   
   const priceD = parseFloat(formatUnits(event.args.price, 8));
 
-  const matchedOrderType = !event.args.isBid;
+  const matchedOrderType = event.args.isBid;
 
   const volume = getVolume(
     matchedOrderType,
