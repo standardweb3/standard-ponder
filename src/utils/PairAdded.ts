@@ -25,21 +25,11 @@ export const PairAddedHandleTokenPairOrderbook = async (
       price: 0,
       cgPrice: 0.0,
       cgId: "",
-    },
-    update: {
-      price: 0,
-      cgPrice: 0.0,
-      cgId: "",
     }
   });
   await Token.upsert({
     id: event.args.quote,
     create: {
-      price: 0,
-      cgPrice: 0.0,
-      cgId: "",
-    },
-    update: {
       price: 0,
       cgPrice: 0.0,
       cgId: "",
