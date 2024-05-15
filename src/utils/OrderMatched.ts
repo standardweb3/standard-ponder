@@ -72,8 +72,8 @@ const handleBucketInTime = async (
       high: priceD,
       average: priceD,
       count: 1,
-      baseVolume: matchedOrderType == true ? volume : volume / priceD,
-      quoteVolume: matchedOrderType == false ? volume : volume * priceD,
+      baseVolume: matchedOrderType == true ? volume : volume * priceD,
+      quoteVolume: matchedOrderType == false ? volume : volume / priceD,
       timestamp: aggregatedTime,
     },
     update: ({ current }: any) => ({
@@ -83,8 +83,8 @@ const handleBucketInTime = async (
       average:
         (current.average * current.count + priceD) / (current.count + 1),
       count: current.count + 1,
-      baseVolume: matchedOrderType == true ? current.baseVolume + volume : current.baseVolume + volume / priceD,
-      quoteVolume: matchedOrderType == false ? current.quoteVolume + volume : current.quoteVolume + volume * priceD,
+      baseVolume: matchedOrderType == true ? current.quoteVolume + volume : current.quoteVolume + volume * priceD, 
+      quoteVolume: matchedOrderType == false ? current.baseVolume + volume : current.baseVolume + volume / priceD,
     }), 
   });
 };
