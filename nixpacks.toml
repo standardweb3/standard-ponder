@@ -1,2 +1,2 @@
 [phases.setup]
-    nixPkgs = ['node', 'python311', 'gcc']
+    nixPkgs = ['...', 'python311', 'gcc']
