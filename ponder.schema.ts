@@ -6,6 +6,19 @@ export default createSchema((p) => ({
     totalTrades: p.int(),
     totalPairs: p.int(),
   }),
+  PointAccount : p.createTable({
+    id: p.string(),
+    points: p.float(),
+  }),
+  PointDay: p.createTable({
+    id: p.string(),
+    totalGenerated: p.float()
+  }),
+  PairPoint: p.createTable({
+    id: p.string(),
+    multiplier: p.float(),
+    pointsGenerated: p.float()
+  }),
   MinBucket: p.createTable({
     /// {base address}-{quote address}-{min}
     id: p.string(),
