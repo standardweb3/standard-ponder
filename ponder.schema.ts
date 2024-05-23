@@ -22,6 +22,10 @@ export default createSchema((p) => ({
   MinBucket: p.createTable({
     /// {base address}-{quote address}-{min}
     id: p.string(),
+    /// base address
+    base: p.string(),
+    /// quote address
+    quote: p.string(),
     /// orderbook contract address
     orderbook: p.string().references("Pair.id"),
     /// open price in 1 min related to asset
@@ -46,6 +50,10 @@ export default createSchema((p) => ({
   HourBucket: p.createTable({
     /// {base address}-{quote address}-{hour}
     id: p.string(),
+    /// base address
+    base: p.string(),
+    /// quote address
+    quote: p.string(),
     /// orderbook contract address
     orderbook: p.string().references("Pair.id"),
     /// open price in 24 hours related to asset
@@ -70,6 +78,10 @@ export default createSchema((p) => ({
   DayBucket: p.createTable({
     /// {base address}-{quote address}-{hour}
     id: p.string(),
+    /// base address
+    base: p.string(),
+    /// quote address
+    quote: p.string(),
     /// orderbook contract address
     orderbook: p.string().references("Pair.id"),
     /// open price in 24 hours related to asset

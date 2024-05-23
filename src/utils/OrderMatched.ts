@@ -73,6 +73,8 @@ const handleBucketInTime = async (
     id,
     create: {
       orderbook: event.args.orderbook,
+      base: pair.base,
+      quote: pair.quote,
       open: priceD,
       close: priceD,
       low: priceD,
