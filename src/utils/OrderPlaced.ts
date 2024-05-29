@@ -84,11 +84,9 @@ export const OrderPlacedHandleAccountOrders = async (
     },
   });
 
-  const historyId = id.concat("-").concat(event.transaction.hash);
-
   // upsert OrderHistory as the order rewrites on the id circulating with uint32.max
   await OrderHistory.upsert({
-    id: historyId,
+    id,
     create: {
       orderId: event.args.id,
       isBid: event.args.isBid,
