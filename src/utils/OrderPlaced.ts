@@ -21,7 +21,6 @@ export const OrderPlacedHandleAccountOrders = async (
   Account: any,
   Order: any,
   OrderHistory: any,
-  MinBucket: any
 ) => {
   const id = event.args.owner
     .concat("-")
