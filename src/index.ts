@@ -29,6 +29,8 @@ ponder.on("matchingEngine:OrderMatched", async ({ event, context }) => {
   const {
     BidOrder,
     AskOrder,
+    BidOrderHistory,
+    AskOrderHistory,
     Pair,
     DayBucket,
     HourBucket,
@@ -67,9 +69,9 @@ ponder.on("matchingEngine:OrderMatched", async ({ event, context }) => {
   // Update Order info
   // if matching order is buy
   if (!event.args.isBid) {
-    await OrderMatchedHandleOrder(event, chainId, Analysis, pair, Account, BidOrder);
+    await OrderMatchedHandleOrder(event,  pair, Account, BidOrder, BidOrderHistory);
   } else {
-    await OrderMatchedHandleOrder(event, chainId, Analysis, pair, Account, AskOrder);
+    await OrderMatchedHandleOrder(event,  pair, Account, AskOrder, AskOrderHistory);
   }
 });
 

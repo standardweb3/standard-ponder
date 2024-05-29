@@ -50,7 +50,7 @@ const handleBucketInTime = async (
     .concat(pair!.quote)
     .concat("-")
     .concat(aggregatedTime.toString());
-  
+
   const priceD = parseFloat(formatUnits(event.args.price, 8));
 
   const matchedOrderType = event.args.isBid;
@@ -64,7 +64,8 @@ const handleBucketInTime = async (
   );
 
   // true then base volume, false then quote volume
-  const counterVolume = matchedOrderType == true ? volume / priceD : volume * priceD
+  const counterVolume =
+    matchedOrderType == true ? volume / priceD : volume * priceD;
 
   const baseVolume = matchedOrderType == true ? counterVolume : volume;
   const quoteVolume = matchedOrderType == false ? counterVolume : volume;
@@ -89,12 +90,11 @@ const handleBucketInTime = async (
       close: priceD,
       low: current.low > priceD ? priceD : current.low,
       high: current.high < priceD ? priceD : current.high,
-      average:
-        (current.average * current.count + priceD) / (current.count + 1),
+      average: (current.average * current.count + priceD) / (current.count + 1),
       count: current.count + 1,
       baseVolume: current.baseVolume + baseVolume,
       quoteVolume: current.quoteVolume + quoteVolume,
-    }), 
+    }),
   });
 };
 
@@ -149,7 +149,12 @@ export const OrderMatchedHandleTrade = async (
     .concat(event.args.id.toString());
 
   const priceD = parseFloat(formatUnits(event.args.price, 8));
-  const amountD = getVolume(event.args.isBid, event.args.amount, pair.bDecimal, pair.qDecimal);
+  const amountD = getVolume(
+    event.args.isBid,
+    event.args.amount,
+    pair.bDecimal,
+    pair.qDecimal
+  );
 
   // upsert Trade as the order rewrites on the id circulating with uint32.max
   await Trade.upsert({
@@ -193,11 +198,10 @@ export const OrderMatchedHandleTrade = async (
 
 export const OrderMatchedHandleOrder = async (
   event: any,
-  chainId: any,
-  Analysis: any,
   pair: any,
   Account: any,
-  Order: any
+  Order: any,
+  OrderHistory: any
 ) => {
   const id = event.args.owner
     .concat("-")
@@ -211,6 +215,19 @@ export const OrderMatchedHandleOrder = async (
     id,
   });
 
+  // if isBid is true, quote amount is in event, if isBid is false, base amount is in event
+  // the amount to match with in case of isBid=true is baseAmount, the amount to match with in case of isBid=false is quoteAmount
+  // normalize the amount with appropriate decimal
+  const normalized = getVolume(
+    event.args.isBid,
+    event.args.amount,
+    pair.bDecimal,
+    pair.qDecimal
+  );
+  const decrease = event.args.isBid
+    ? normalized / order.price
+    : normalized * order.price;
+
   if (event.args.clear) {
     await Order.delete({
       id,
@@ -222,11 +239,6 @@ export const OrderMatchedHandleOrder = async (
       }),
     });
   } else {
-    // if isBid is true, quote amount is in event, if isBid is false, base amount is in event
-    // the amount to match with in case of isBid=true is baseAmount, the amount to match with in case of isBid=false is quoteAmount
-    // normalize the amount with appropriate decimal
-    const normalized = getVolume(event.args.isBid, event.args.amount, pair.bDecimal, pair.qDecimal);
-    const decrease = event.args.isBid ? normalized / order.price : normalized * order.price;
     await Order.update({
       id,
       data: {
@@ -235,4 +247,47 @@ export const OrderMatchedHandleOrder = async (
       },
     });
   }
+
+  const historyId = event.args.owner
+    .concat("-")
+    .concat(event.args.orderbook)
+    .concat("-")
+    .concat(event.args.isBid.toString())
+    .concat("-")
+    .concat(event.args.id.toString())
+    .concat("-")
+    .concat(event.transaction.hash.toString());
+
+  // add matched order to order history
+  await OrderHistory.upsert({
+    id: historyId,
+    create: {
+      orderId: event.args.id,
+      base: pair!.base,
+      quote: pair!.quote,
+      isBid: event.args.isBid,
+      orderbook: event.args.orderbook,
+      price: order.price,
+      amount: decrease,
+      taker: event.args.sender,
+      maker: event.args.owner,
+      account: event.args.sender,
+      timestamp: event.block.timestamp,
+      txHash: event.transaction.hash,
+    },
+    update: {
+      orderId: event.args.id,
+      base: pair!.base,
+      quote: pair!.quote,
+      isBid: event.args.isBid,
+      orderbook: event.args.orderbook,
+      price: order.price,
+      amount: decrease,
+      taker: event.args.sender,
+      maker: event.args.owner,
+      account: event.args.sender,
+      timestamp: event.block.timestamp,
+      txHash: event.transaction.hash,
+    },
+  });
 };

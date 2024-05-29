@@ -208,6 +208,10 @@ export default createSchema((p) => ({
     timestamp: p.bigint(),
     /// wallet address who made an order
     maker: p.string().references("Account.id"),
+    /// wallet address who took an order
+    taker: p.string().references("Account.id"),
+    /// wallet address who send the transaction in an order
+    account: p.string().references("Account.id"),
     /// transaction hash 
     txHash: p.string()
   }),
@@ -232,6 +236,10 @@ export default createSchema((p) => ({
     timestamp: p.bigint(),
     /// wallet address who made an order
     maker: p.string().references("Account.id"),
+    /// wallet address who took an order
+    taker: p.string().references("Account.id"),
+    /// wallet address who send the transaction in an order
+    account: p.string().references("Account.id"),
     /// transaction hash
     txHash: p.string()
   }),

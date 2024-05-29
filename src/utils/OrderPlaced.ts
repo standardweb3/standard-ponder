@@ -20,7 +20,8 @@ export const OrderPlacedHandleAccountOrders = async (
   pair: any,
   Account: any,
   Order: any,
-  OrderHistory: any
+  OrderHistory: any,
+  MinBucket: any
 ) => {
   const id = event.args.owner
     .concat("-")
@@ -84,9 +85,11 @@ export const OrderPlacedHandleAccountOrders = async (
     },
   });
 
+  const historyId = id.concat("-").concat(event.transaction.hash);
+
   // upsert OrderHistory as the order rewrites on the id circulating with uint32.max
   await OrderHistory.upsert({
-    id,
+    id: historyId,
     create: {
       orderId: event.args.id,
       isBid: event.args.isBid,
@@ -96,7 +99,9 @@ export const OrderPlacedHandleAccountOrders = async (
       price: priceD,
       amount: amountD,
       timestamp: event.block.timestamp,
+      taker: "0x0000000000000000000000000000000000000000",
       maker: event.args.owner,
+      account: event.args.owner,
       txHash: event.transaction.hash,
     },
     update: {
@@ -108,7 +113,9 @@ export const OrderPlacedHandleAccountOrders = async (
       price: priceD,
       amount: amountD,
       timestamp: event.block.timestamp,
+      taker: "0x0000000000000000000000000000000000000000",
       maker: event.args.owner,
+      account: event.args.owner,
       txHash: event.transaction.hash,
     },
   });
