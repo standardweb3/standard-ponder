@@ -201,7 +201,7 @@ export const OrderMatchedHandleOrder = async (
   pair: any,
   Account: any,
   Order: any,
-  OrderHistory: any
+  TradeHistory: any
 ) => {
   const id = event.args.owner
     .concat("-")
@@ -259,7 +259,7 @@ export const OrderMatchedHandleOrder = async (
     .concat(event.transaction.hash.toString());
 
   // add matched order to order history
-  await OrderHistory.upsert({
+  await TradeHistory.upsert({
     id: historyId,
     create: {
       orderId: event.args.id,

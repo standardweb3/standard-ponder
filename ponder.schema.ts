@@ -187,6 +187,62 @@ export default createSchema((p) => ({
     /// aggregated info per day
     DayBuckets: p.many("DayBucket.orderbook")
   }),
+  BidTradeHistory: p.createTable({
+    // a unique identifier
+    id: p.string(),
+    /// placed order id
+    orderId: p.bigint(),
+    /// order type (bid(buy) if true, ask(sell) if false)
+    isBid: p.boolean(),
+    /// base token address
+    base: p.string(),
+    /// quote token address
+    quote: p.string(),
+    /// orderbook contract address
+    orderbook: p.string().references("Pair.id"),
+    /// price in 8 decimals
+    price: p.float(),
+    /// deposit asset amount
+    amount: p.float(),
+    /// submitted timestamp
+    timestamp: p.bigint(),
+    /// wallet address who made an order
+    maker: p.string().references("Account.id"),
+    /// wallet address who took an order
+    taker: p.string().references("Account.id"),
+    /// wallet address who send the transaction in an order
+    account: p.string().references("Account.id"),
+    /// transaction hash 
+    txHash: p.string()
+  }),
+  AskTradeHistory: p.createTable({
+    // a unique identifier
+    id: p.string(),
+    /// placed order id
+    orderId: p.bigint(),
+    /// order type (bid(buy) if true, ask(sell) if false)
+    isBid: p.boolean(),
+    /// base token address
+    base: p.string(),
+    /// quote token address
+    quote: p.string(),
+    /// orderbook contract address
+    orderbook: p.string().references("Pair.id"),
+    /// price in 8 decimals
+    price: p.float(),
+    /// deposit asset amount
+    amount: p.float(),
+    /// submitted timestamp
+    timestamp: p.bigint(),
+    /// wallet address who made an order
+    maker: p.string().references("Account.id"),
+    /// wallet address who took an order
+    taker: p.string().references("Account.id"),
+    /// wallet address who send the transaction in an order
+    account: p.string().references("Account.id"),
+    /// transaction hash
+    txHash: p.string()
+  }),
   BidOrderHistory: p.createTable({
     // a unique identifier
     id: p.string(),
