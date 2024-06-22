@@ -7,7 +7,9 @@ export default createSchema((p) => ({
     totalPairs: p.int(),
   }),
   PointAccount : p.createTable({
+    /// wallet address 
     id: p.string(),
+    /// Total minted points
     points: p.float(),
   }),
   PointDay: p.createTable({

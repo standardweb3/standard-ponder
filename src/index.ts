@@ -9,7 +9,8 @@ import {
   OrderMatchedHandleToken,
   OrderPlacedHandleAccountOrders,
   PairAddedHandleTokenPairOrderbook,
-} from "./utils";
+} from "./handlers";
+import { formatUnits } from "viem";
 
 // const knock = new Knock(process.env.KNOCK_API_KEY);
 
@@ -137,3 +138,21 @@ ponder.on("matchingEngine:OrderCanceled", async ({ event, context }) => {
     );
   }
 });
+
+//@ts-ignore
+ponder.on("stndxp:Transfer", async ({ event, context }) => {
+  const { PointDay, PointAccount } = context.db;
+  // @ts-ignore
+  if(event.args.from === "0x0000000000000000000000000000000000000000"){
+    PointAccount.upsert({
+      // @ts-ignore
+      id: event.args.to,
+      create: {
+        points: formatUnits(event.args.value, 18)
+      },
+      update: ({ current }: any) => ({
+        points: current.points + formatUnits(event.args.value, 18)
+      })
+    })
+  }
+})
