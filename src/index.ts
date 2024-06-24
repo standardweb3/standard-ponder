@@ -141,7 +141,7 @@ ponder.on("matchingEngine:OrderCanceled", async ({ event, context }) => {
 
 //@ts-ignore
 ponder.on("stndxp:Transfer", async ({ event, context }) => {
-  const { PointDay, PointAccount } = context.db;
+  const { PointAccount } = context.db;
   // @ts-ignore
   if(event.args.from === "0x0000000000000000000000000000000000000000"){
     PointAccount.upsert({
