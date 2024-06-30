@@ -48,6 +48,8 @@ export default createSchema((p) => ({
     count: p.int(),
     /// aggregated timestamp in 1 min in seconds
     timestamp: p.int()
+  }, {
+    pairIndex: p.index(["base", "quote"]),
   }),
   HourBucket: p.createTable({
     /// {base address}-{quote address}-{hour}
@@ -76,6 +78,8 @@ export default createSchema((p) => ({
     count: p.int(),
     /// aggregated timestamp in 1 hour in seconds
     timestamp: p.int()
+  }, {
+    pairIndex: p.index(["base", "quote"]),
   }),
   DayBucket: p.createTable({
     /// {base address}-{quote address}-{hour}
@@ -104,6 +108,8 @@ export default createSchema((p) => ({
     count: p.int(),
     /// aggregated timestamp in 24 hours in seconds
     timestamp: p.int()
+  }, {
+    pairIndex: p.index(["base", "quote"]),
   }),
   Token: p.createTable({
     /// address of the token contract
@@ -142,6 +148,8 @@ export default createSchema((p) => ({
     maker: p.string(),
     /// transaction hash
     txHash: p.string()
+  }, {
+    pairIndex: p.index(["base", "quote"]),
   }),
   Account: p.createTable({
     /// account wallet address
@@ -188,6 +196,8 @@ export default createSchema((p) => ({
     hourBuckets: p.many("HourBucket.orderbook"),
     /// aggregated info per day
     DayBuckets: p.many("DayBucket.orderbook")
+  }, {
+    pairIndex: p.index(["base", "quote"]),
   }),
   BidTradeHistory: p.createTable({
     // a unique identifier
@@ -216,6 +226,8 @@ export default createSchema((p) => ({
     account: p.string().references("Account.id"),
     /// transaction hash 
     txHash: p.string()
+  }, {
+    pairIndex: p.index(["base", "quote"]),
   }),
   AskTradeHistory: p.createTable({
     // a unique identifier
@@ -244,6 +256,8 @@ export default createSchema((p) => ({
     account: p.string().references("Account.id"),
     /// transaction hash
     txHash: p.string()
+  }, {
+    pairIndex: p.index(["base", "quote"]),
   }),
   BidOrderHistory: p.createTable({
     // a unique identifier
@@ -272,6 +286,8 @@ export default createSchema((p) => ({
     account: p.string().references("Account.id"),
     /// transaction hash 
     txHash: p.string()
+  }, {
+    accountIndex: p.index(["account"]),
   }),
   AskOrderHistory: p.createTable({
     // a unique identifier
@@ -300,6 +316,8 @@ export default createSchema((p) => ({
     account: p.string().references("Account.id"),
     /// transaction hash
     txHash: p.string()
+  }, {
+    accountIndex: p.index(["account"]),
   }),
   BidOrder: p.createTable({
     /// a unique identifier
@@ -326,6 +344,8 @@ export default createSchema((p) => ({
     maker: p.string().references("Account.id"),
     /// transaction hash
     txHash: p.string()
+  }, {
+    makerIndex: p.index(["maker"]),
   }),
   AskOrder: p.createTable({
     /// a unique identifier
@@ -352,6 +372,7 @@ export default createSchema((p) => ({
     maker: p.string().references("Account.id"),
     /// transaction Hash
     txHash: p.string()
+  }, {
+    makerIndex: p.index(["maker"]),
   }),
 }));
-
