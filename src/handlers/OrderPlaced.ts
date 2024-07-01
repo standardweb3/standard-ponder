@@ -45,6 +45,7 @@ export const OrderPlacedHandleAccountOrders = async (
       lastTraded: timestamp,
       totalOrders: 1,
       totalOrderHistory: 1,
+      totalTradeHistory: 0,
     },
     update: ({ current }: any) => ({
       lastTraded: timestamp,
