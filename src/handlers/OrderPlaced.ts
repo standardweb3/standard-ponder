@@ -120,6 +120,7 @@ export const OrderPlacedHandleAccountOrders = async (
     id: tickId,
     create: {
       orderbook: event.args.orderbook,
+      isBid: event.args.isBid,
       price: priceD,
       amount: amountD,
     }, update({ current }: any) {
