@@ -21,6 +21,7 @@ export const OrderPlacedHandleAccountOrders = async (
   Account: any,
   Order: any,
   OrderHistory: any,
+  Tick: any
 ) => {
   const id = event.args.owner
     .concat("-")
@@ -42,18 +43,17 @@ export const OrderPlacedHandleAccountOrders = async (
     id: event.args.owner,
     create: {
       lastTraded: timestamp,
-      orders: 1,
-      orderHistory: 1,
+      totalOrders: 1,
+      totalOrderHistory: 1,
     },
     update: ({ current }: any) => ({
       lastTraded: timestamp,
-      orders: current.orders + 1,
-      orderHistory: current.orderHistory + 1,
+      totalOrders: current.totalOrders + 1,
+      totalOrderHistory: current.totalOrderHistory + 1,
     }),
   });
 
   // upsert Order as the order rewrites on the id circulating with uint32.max
-
   await Order.upsert({
     id,
     create: {
@@ -96,9 +96,7 @@ export const OrderPlacedHandleAccountOrders = async (
       price: priceD,
       amount: amountD,
       timestamp: event.block.timestamp,
-      taker: "0x0000000000000000000000000000000000000000",
       maker: event.args.owner,
-      account: event.args.owner,
       txHash: event.transaction.hash,
     },
     update: {
@@ -110,10 +108,23 @@ export const OrderPlacedHandleAccountOrders = async (
       price: priceD,
       amount: amountD,
       timestamp: event.block.timestamp,
-      taker: "0x0000000000000000000000000000000000000000",
       maker: event.args.owner,
-      account: event.args.owner,
       txHash: event.transaction.hash,
     },
+  });
+
+  // upsert tick in a placed price with a unique id
+  const tickId = event.args.orderbook.concat("-").concat(event.args.isBid.toString()).concat("-").concat(event.args.price.toString());
+  await Tick.upsert({
+    id: tickId,
+    create: {
+      orderbook: event.args.orderbook,
+      price: priceD,
+      amount: amountD,
+    }, update({ current }: any) {
+      return {
+        amount: current.amount + amountD,
+      };
+    }
   });
 };

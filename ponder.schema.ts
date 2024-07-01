@@ -3,8 +3,8 @@ import { createSchema } from "@ponder/core";
 export default createSchema((p) => ({
   Analysis: p.createTable({
     id: p.int(),
-    totalTrades: p.int(),
-    totalPairs: p.int(),
+    totalGlobalTrades: p.int(),
+    totalGlobalPairs: p.int(),
   }),
   PointAccount : p.createTable({
     /// wallet address 
@@ -14,12 +14,12 @@ export default createSchema((p) => ({
   }),
   PointDay: p.createTable({
     id: p.string(),
-    totalGenerated: p.float()
+    totalGlobalGenerated: p.float()
   }),
   PairPoint: p.createTable({
     id: p.string(),
     multiplier: p.float(),
-    pointsGenerated: p.float()
+    pointsPairGenerated: p.float()
   }),
   MinBucket: p.createTable({
     /// {base address}-{quote address}-{min}
@@ -145,7 +145,7 @@ export default createSchema((p) => ({
     /// taker of the matched order in the orderbook
     taker: p.string(),
     /// maker of the matched order in the orderbook
-    maker: p.string(),
+    maker: p.string().references("Account.id"),
     /// transaction hash
     txHash: p.string()
   }, {
@@ -156,18 +156,18 @@ export default createSchema((p) => ({
     id: p.string(),
     /// Last traded
     lastTraded: p.int(),
-    /// bid orders that are placed by the account
-    bidOrders: p.many("BidOrder.maker"),
-    /// ask orders that are placed by the account
-    askOrders: p.many("AskOrder.maker"),
-    /// bid orders that are already matched or canceled
-    bidOrderHistory: p.many("BidOrderHistory.maker"),
-    /// ask orders that are already matched or canceled
-    askOrderHistory: p.many("AskOrderHistory.maker"),
+    /// orders that are placed by the account
+    orders: p.many("Order.maker"),
+    /// orders that are already matched or canceled
+    orderHistory: p.many("OrderHistory.maker"),
+    /// trades that are made by the account
+    tradeHistory: p.many("Trade.maker"),
     /// total orders that a user has currently
-    orders: p.int(),
+    totalOrders: p.int(),
     /// total order history that a user has currently
-    orderHistory: p.int()
+    totalOrderHistory: p.int(),
+    /// total trade number that a user has currently
+    totalTradeHistory: p.int()
   }),
   Pair: p.createTable({
     /// orderbook contract address
@@ -182,14 +182,14 @@ export default createSchema((p) => ({
     bDecimal: p.int(),
     /// quote token decimal
     qDecimal: p.int(),
-    /// placed bids
-    bids: p.many("BidOrder.orderbook"),
-    /// placed asks
-    asks: p.many("AskOrder.orderbook"),
-    /// buy history
-    buys: p.many("BidOrderHistory.orderbook"),
-    /// sell history
-    sells: p.many("AskOrderHistory.orderbook"),
+    /// orderbook ticks
+    ticks: p.many("Tick.orderbook"),
+    /// orders
+    orders: p.many("Order.orderbook"),
+    /// order history
+    orderHistory: p.many("OrderHistory.orderbook"),
+    /// trade history
+    tradeHistory: p.many("TradeHistory.orderbook"),
     /// aggregated info per min
     minBuckets: p.many("MinBucket.orderbook"),
     /// aggregated info per hour
@@ -199,7 +199,21 @@ export default createSchema((p) => ({
   }, {
     pairIndex: p.index(["base", "quote"]),
   }),
-  BidTradeHistory: p.createTable({
+  Tick: p.createTable({
+    /// {orderbook contract address}-{isBid}-{price}
+    id: p.string(),
+    /// orcerbook contract address
+    orderbook: p.string().references("Pair.id"),
+    /// buy or sell
+    isBid: p.boolean(),
+    /// price
+    price: p.float(),
+    /// total amount of order stored in the price
+    amount: p.float()
+  }, {
+    tickIndex: p.index(["isBid", "price"]),
+  }),
+  TradeHistory: p.createTable({
     // a unique identifier
     id: p.string(),
     /// placed order id
@@ -229,7 +243,7 @@ export default createSchema((p) => ({
   }, {
     pairIndex: p.index(["base", "quote"]),
   }),
-  AskTradeHistory: p.createTable({
+  OrderHistory: p.createTable({
     // a unique identifier
     id: p.string(),
     /// placed order id
@@ -248,78 +262,14 @@ export default createSchema((p) => ({
     amount: p.float(),
     /// submitted timestamp
     timestamp: p.bigint(),
-    /// wallet address who made an order
-    maker: p.string().references("Account.id"),
-    /// wallet address who took an order
-    taker: p.string().references("Account.id"),
     /// wallet address who send the transaction in an order
-    account: p.string().references("Account.id"),
-    /// transaction hash
-    txHash: p.string()
-  }, {
-    pairIndex: p.index(["base", "quote"]),
-  }),
-  BidOrderHistory: p.createTable({
-    // a unique identifier
-    id: p.string(),
-    /// placed order id
-    orderId: p.bigint(),
-    /// order type (bid(buy) if true, ask(sell) if false)
-    isBid: p.boolean(),
-    /// base token address
-    base: p.string(),
-    /// quote token address
-    quote: p.string(),
-    /// orderbook contract address
-    orderbook: p.string().references("Pair.id"),
-    /// price in 8 decimals
-    price: p.float(),
-    /// deposit asset amount
-    amount: p.float(),
-    /// submitted timestamp
-    timestamp: p.bigint(),
-    /// wallet address who made an order
     maker: p.string().references("Account.id"),
-    /// wallet address who took an order
-    taker: p.string().references("Account.id"),
-    /// wallet address who send the transaction in an order
-    account: p.string().references("Account.id"),
     /// transaction hash 
     txHash: p.string()
   }, {
-    accountIndex: p.index(["account"]),
+    accountIndex: p.index(["maker"]),
   }),
-  AskOrderHistory: p.createTable({
-    // a unique identifier
-    id: p.string(),
-    /// placed order id
-    orderId: p.bigint(),
-    /// order type (bid(buy) if true, ask(sell) if false)
-    isBid: p.boolean(),
-    /// base token address
-    base: p.string(),
-    /// quote token address
-    quote: p.string(),
-    /// orderbook contract address
-    orderbook: p.string().references("Pair.id"),
-    /// price in 8 decimals
-    price: p.float(),
-    /// deposit asset amount
-    amount: p.float(),
-    /// submitted timestamp
-    timestamp: p.bigint(),
-    /// wallet address who made an order
-    maker: p.string().references("Account.id"),
-    /// wallet address who took an order
-    taker: p.string().references("Account.id"),
-    /// wallet address who send the transaction in an order
-    account: p.string().references("Account.id"),
-    /// transaction hash
-    txHash: p.string()
-  }, {
-    accountIndex: p.index(["account"]),
-  }),
-  BidOrder: p.createTable({
+  Order: p.createTable({
     /// a unique identifier
     id: p.string(),
     /// order type (bid(buy) if true, ask(sell) if false)
@@ -343,34 +293,6 @@ export default createSchema((p) => ({
     /// wallet address who made an order
     maker: p.string().references("Account.id"),
     /// transaction hash
-    txHash: p.string()
-  }, {
-    makerIndex: p.index(["maker"]),
-  }),
-  AskOrder: p.createTable({
-    /// a unique identifier
-    id: p.string(),
-    /// order type (bid(buy) if true, ask(sell) if false)
-    isBid: p.boolean(),
-    /// placed order id
-    orderId: p.bigint(),
-    /// base token address
-    base: p.string(),
-    /// quote token address
-    quote: p.string(),
-    /// orderbook contract address
-    orderbook: p.string().references("Pair.id"),
-    /// price in 8 decimals
-    price: p.float(),
-    /// deposit asset amount
-    amount: p.float(),
-    /// placed asset amount
-    placed: p.float(),
-    /// submitted timestamp
-    timestamp: p.bigint(),
-    /// wallet address who made an order
-    maker: p.string().references("Account.id"),
-    /// transaction Hash
     txHash: p.string()
   }, {
     makerIndex: p.index(["maker"]),

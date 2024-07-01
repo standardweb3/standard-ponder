@@ -9,12 +9,12 @@ export const PairAddedHandleTokenPairOrderbook = async (
   await Analysis.upsert({
     id: chainId,
     create: {
-      totalTrades: 0,
-      totalPairs: 1
+      totalGlobalTrades: 0,
+      totalGlobalPairs: 1
     },
     // @ts-ignore
     update: ({ current }) => ({
-      totalPairs: current.totalPairs + 1
+      totalPairs: current.totalGlobalPairs + 1
     })
   });
   

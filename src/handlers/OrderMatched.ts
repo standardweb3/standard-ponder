@@ -139,7 +139,9 @@ export const OrderMatchedHandleTrade = async (
   chainId: any,
   Analysis: any,
   pair: any,
-  Trade: any
+  Trade: any,
+  Tick: any,
+  tickInfo: any,
 ) => {
   const id = pair!.base
     .concat("-")
@@ -185,13 +187,27 @@ export const OrderMatchedHandleTrade = async (
     },
   });
 
+  // Subtract matched amount in tick
+  const tickId = event.args.orderbook.concat("-").concat(!event.args.isBid.toString()).concat("-").concat(event.args.price.toString());
+  if(tickInfo.amount - amountD < 0) {
+    await Tick.delete({
+      id: tickId,
+    })
+  }
+  await Tick.update({
+    id: tickId,
+    data: ({ current }: any) => ({
+      amount: current.amount - amountD,
+    }),
+  })
+
   await Analysis.upsert({
     id: chainId,
     create: {
-      totalTrades: 1,
+      totalGlobalTrades: 1,
     },
     update: ({ current }: any) => ({
-      totalTrades: current.totalTrades + 1,
+      totalGlobalTrades: current.totalGlobalTrades + 1,
     }),
   });
 };
@@ -235,7 +251,7 @@ export const OrderMatchedHandleOrder = async (
     Account.update({
       id: event.args.owner,
       data: ({ current }: any) => ({
-        orders: current.orders - 1,
+        totalOrders: current.totalOrders - 1,
       }),
     });
   } else {
@@ -248,6 +264,27 @@ export const OrderMatchedHandleOrder = async (
     });
   }
 
+  // add trade history count to both taker and maker
+  Account.upsert({
+    id: event.args.sender,
+    create: {
+      totalTradeHistory: 1,
+    },
+    update: ({ current }: any) => ({
+      totalTradeHistory: current.totalTradeHistory + 1,
+    }),
+  })
+
+  Account.upsert({
+    id: event.args.owner,
+    create: {
+      totalTradeHistory: 1,
+    },
+    update: ({ current }: any) => ({
+      totalTradeHistory: current.totalTradeHistory + 1,
+    }),
+  });
+
   const historyId = event.args.owner
     .concat("-")
     .concat(event.args.orderbook)
@@ -258,7 +295,7 @@ export const OrderMatchedHandleOrder = async (
     .concat("-")
     .concat(event.transaction.hash.toString());
 
-  // add matched order to order history
+  // add matched order to Trade history
   await TradeHistory.upsert({
     id: historyId,
     create: {

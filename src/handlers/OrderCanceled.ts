@@ -37,8 +37,8 @@ export const OrderCanceledHandleOrder = async (
   await Account.update({
     id: event.args.owner,
     data: ({ current }: any) => ({
-      orders: current.orders - 1,
-      orderHistory: current.orderHistory - 1,
+      totalOrders: current.totalOrders - 1,
+      totalOrderHistory: current.totalOrderHistory - 1,
     }),
   });
 
