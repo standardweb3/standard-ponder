@@ -188,7 +188,7 @@ export const OrderMatchedHandleTrade = async (
   });
 
   // Subtract matched amount in tick
-  const tickId = event.args.orderbook.concat("-").concat(!event.args.isBid.toString()).concat("-").concat(event.args.price.toString());
+  const tickId = event.args.orderbook.concat("-").concat(!(event.args.isBid).toString()).concat("-").concat(event.args.price.toString());
   if(tickInfo.amount - amountD < 0) {
     await Tick.delete({
       id: tickId,
