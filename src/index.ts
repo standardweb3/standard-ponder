@@ -1,6 +1,5 @@
 import { ponder } from "@/generated";
 
-import { Knock } from "@knocklabs/node";
 import {
   OrderCanceledHandleOrder,
   OrderMatchedHandleBuckets,
@@ -47,7 +46,8 @@ ponder.on("matchingEngine:OrderMatched", async ({ event, context }) => {
   });
 
   // Get tick info
-  const tickId = event.args.orderbook.concat("-").concat((!event.args.isBid).toString()).concat("-").concat(event.args.price.toString());
+  const tickId = event.args.orderbook.concat("-").concat(!event.args.isBid.toString()).concat("-").concat(event.args.price.toString());
+  console.log("matched", tickId);
   const tickInfo = await Tick.findUnique({
     id: tickId,
   });
@@ -68,9 +68,6 @@ ponder.on("matchingEngine:OrderMatched", async ({ event, context }) => {
     HourBucket,
     MinBucket
   );
-
-  // Update recent transactions
-  await OrderMatchedHandleTrade(event, chainId, Analysis, pair, Trade, Tick);
 
   // Update Order info
   await OrderMatchedHandleOrder(event,  pair, Account, Order, TradeHistory);

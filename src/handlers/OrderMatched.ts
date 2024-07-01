@@ -193,18 +193,23 @@ export const OrderMatchedHandleTrade = async (
     .concat(!event.args.isBid.toString())
     .concat("-")
     .concat(event.args.price.toString());
+  console.log(tickInfo, amountD, "ticks");
+  // Matched amount in tick, if the matched tick is sell order with base amount, amountD is quote amount to match,
+  // if the matched tick is buy order with quote amount, amountD is base amount to match
+  const matched = tickInfo.isBid ? amountD * priceD : amountD / priceD;
   if (tickInfo != null) {
-    if (tickInfo.amount - amountD < 0) {
+    if (tickInfo.amount - matched < 0) {
       await Tick.delete({
         id: tickId,
       });
+    } else {
+      await Tick.update({
+        id: tickId,
+        data: ({ current }: any) => ({
+          amount: current.amount - matched,
+        }),
+      });
     }
-    await Tick.update({
-      id: tickId,
-      data: ({ current }: any) => ({
-        amount: current.amount - amountD,
-      }),
-    });
   }
 
   await Analysis.upsert({

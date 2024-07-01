@@ -19,7 +19,12 @@ export const OrderCanceledHandleOrder = async (
     id,
   });
 
-  const amountD = getVolume(event.args.isBid, event.args.amount, pair.bDecimal, pair.qDecimal);
+  const amountD = getVolume(
+    event.args.isBid,
+    event.args.amount,
+    pair.bDecimal,
+    pair.qDecimal
+  );
 
   if (canceled!.amount - amountD <= 0) {
     await OrderHistory.delete({
