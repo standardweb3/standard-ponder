@@ -47,7 +47,7 @@ ponder.on("matchingEngine:OrderMatched", async ({ event, context }) => {
   });
 
   // Get tick info
-  const tickId = event.args.orderbook.concat("-").concat(event.args.isBid.toString()).concat("-").concat(event.args.price.toString());
+  const tickId = event.args.orderbook.concat("-").concat((!event.args.isBid).toString()).concat("-").concat(event.args.price.toString());
   const tickInfo = await Tick.findUnique({
     id: tickId,
   });
