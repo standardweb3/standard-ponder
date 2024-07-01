@@ -264,10 +264,15 @@ export const OrderMatchedHandleOrder = async (
     });
   }
 
+  const timestamp = Number(event.block.timestamp);
+
   // add trade history count to both taker and maker
-  Account.upsert({
+  await Account.upsert({
     id: event.args.sender,
     create: {
+      lastTraded: timestamp,
+      totalOrders: 0,
+      totalOrderHistory: 0,
       totalTradeHistory: 1,
     },
     update: ({ current }: any) => ({
@@ -275,9 +280,12 @@ export const OrderMatchedHandleOrder = async (
     }),
   })
 
-  Account.upsert({
+  await Account.upsert({
     id: event.args.owner,
     create: {
+      lastTraded: timestamp,
+      totalOrders: 0,
+      totalOrderHistory: 0,
       totalTradeHistory: 1,
     },
     update: ({ current }: any) => ({
