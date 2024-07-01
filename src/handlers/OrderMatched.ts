@@ -141,7 +141,7 @@ export const OrderMatchedHandleTrade = async (
   pair: any,
   Trade: any,
   Tick: any,
-  tickInfo: any,
+  tickInfo: any
 ) => {
   const id = pair!.base
     .concat("-")
@@ -188,18 +188,24 @@ export const OrderMatchedHandleTrade = async (
   });
 
   // Subtract matched amount in tick
-  const tickId = event.args.orderbook.concat("-").concat(!(event.args.isBid).toString()).concat("-").concat(event.args.price.toString());
-  if(tickInfo.amount - amountD < 0) {
-    await Tick.delete({
+  const tickId = event.args.orderbook
+    .concat("-")
+    .concat(!event.args.isBid.toString())
+    .concat("-")
+    .concat(event.args.price.toString());
+  if (tickInfo != null) {
+    if (tickInfo.amount - amountD < 0) {
+      await Tick.delete({
+        id: tickId,
+      });
+    }
+    await Tick.update({
       id: tickId,
-    })
+      data: ({ current }: any) => ({
+        amount: current.amount - amountD,
+      }),
+    });
   }
-  await Tick.update({
-    id: tickId,
-    data: ({ current }: any) => ({
-      amount: current.amount - amountD,
-    }),
-  })
 
   await Analysis.upsert({
     id: chainId,
@@ -278,7 +284,7 @@ export const OrderMatchedHandleOrder = async (
     update: ({ current }: any) => ({
       totalTradeHistory: current.totalTradeHistory + 1,
     }),
-  })
+  });
 
   await Account.upsert({
     id: event.args.owner,
