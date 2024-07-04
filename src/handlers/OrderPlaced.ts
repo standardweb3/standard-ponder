@@ -34,7 +34,7 @@ export const OrderPlacedHandleAccountOrders = async (
   const priceD = parseFloat(formatUnits(event.args.price, 8));
 
   const amountD = getVolume(event.args.isBid, event.args.withoutFee, pair.bDecimal, pair.qDecimal);
-
+  
   const placedD = getVolume(event.args.isBid, event.args.placed, pair.bDecimal, pair.qDecimal);
 
   const timestamp = Number(event.block.timestamp);
@@ -67,7 +67,7 @@ export const OrderPlacedHandleAccountOrders = async (
       amount: amountD,
       placed: placedD,
       timestamp: event.block.timestamp,
-      maker: event.args.owner,
+      account: event.args.owner,
       txHash: event.transaction.hash,
     },
     update: {
@@ -80,7 +80,7 @@ export const OrderPlacedHandleAccountOrders = async (
       amount: amountD,
       placed: placedD,
       timestamp: event.block.timestamp,
-      maker: event.args.owner,
+      account: event.args.owner,
       txHash: event.transaction.hash,
     },
   });
@@ -97,7 +97,7 @@ export const OrderPlacedHandleAccountOrders = async (
       price: priceD,
       amount: amountD,
       timestamp: event.block.timestamp,
-      maker: event.args.owner,
+      account: event.args.owner,
       txHash: event.transaction.hash,
     },
     update: {
@@ -109,7 +109,7 @@ export const OrderPlacedHandleAccountOrders = async (
       price: priceD,
       amount: amountD,
       timestamp: event.block.timestamp,
-      maker: event.args.owner,
+      account: event.args.owner,
       txHash: event.transaction.hash,
     },
   });

@@ -139,7 +139,9 @@ export default createSchema((p) => ({
     /// price in 8 decimals
     price: p.float(),
     /// traded base token amount on isBid == false, traded quote token amount on isBid == true
-    amount: p.float(),
+    baseAmount: p.float(),
+    /// traded quote token amount on isBid == false, traded base token amount on isBid == true
+    quoteAmount: p.float(),
     /// submitted timestamp
     timestamp: p.bigint(),
     /// taker of the matched order in the orderbook
@@ -157,11 +159,11 @@ export default createSchema((p) => ({
     /// Last traded
     lastTraded: p.int(),
     /// orders that are placed by the account
-    orders: p.many("Order.maker"),
+    orders: p.many("Order.account"),
     /// orders that are already matched or canceled
-    orderHistory: p.many("OrderHistory.maker"),
+    orderHistory: p.many("OrderHistory.account"),
     /// trades that are made by the account
-    tradeHistory: p.many("TradeHistory.maker"),
+    tradeHistory: p.many("TradeHistory.account"),
     /// total orders that a user has currently
     totalOrders: p.int(),
     /// total order history that a user has currently
@@ -263,11 +265,11 @@ export default createSchema((p) => ({
     /// submitted timestamp
     timestamp: p.bigint(),
     /// wallet address who send the transaction in an order
-    maker: p.string().references("Account.id"),
+    account: p.string().references("Account.id"),
     /// transaction hash 
     txHash: p.string()
   }, {
-    accountIndex: p.index(["maker"]),
+    accountIndex: p.index(["account"]),
   }),
   Order: p.createTable({
     /// a unique identifier
@@ -291,10 +293,10 @@ export default createSchema((p) => ({
     /// submitted timestamp
     timestamp: p.bigint(),
     /// wallet address who made an order
-    maker: p.string().references("Account.id"),
+    account: p.string().references("Account.id"),
     /// transaction hash
     txHash: p.string()
   }, {
-    makerIndex: p.index(["maker"]),
+    makerIndex: p.index(["account"]),
   }),
 }));

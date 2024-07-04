@@ -152,12 +152,16 @@ export const OrderMatchedHandleTrade = async (
     .concat(event.args.id.toString());
 
   const priceD = parseFloat(formatUnits(event.args.price, 8));
+  // amountD is quote amount on isBid true, base amount on isBid false
   const amountD = getVolume(
     event.args.isBid,
     event.args.amount,
     pair.bDecimal,
     pair.qDecimal
   );
+  // counter amount in decimal, when isBid is true, counter is base amount, when isBid is false, counter is quote amount
+  const counterD = event.args.isBid ? amountD / priceD : amountD * priceD;
+
 
   // upsert Trade as the order rewrites on the id circulating with uint32.max
   await Trade.upsert({
@@ -168,7 +172,8 @@ export const OrderMatchedHandleTrade = async (
       quote: pair!.quote,
       isBid: event.args.isBid,
       price: priceD,
-      amount: amountD,
+      baseAmount: event.args.isBid ? counterD : amountD,
+      quoteAmount: event.args.isBid ? amountD : counterD,
       taker: event.args.sender,
       maker: event.args.owner,
       timestamp: event.block.timestamp,
@@ -180,7 +185,8 @@ export const OrderMatchedHandleTrade = async (
       quote: pair!.quote,
       isBid: event.args.isBid,
       price: priceD,
-      amount: amountD,
+      baseAmount: event.args.isBid ? counterD : amountD,
+      quoteAmount: event.args.isBid ? amountD : counterD,
       taker: event.args.sender,
       maker: event.args.owner,
       timestamp: event.block.timestamp,
@@ -194,10 +200,9 @@ export const OrderMatchedHandleTrade = async (
     .concat(!event.args.isBid.toString())
     .concat("-")
     .concat(event.args.price.toString());
-  console.log(tickInfo, amountD, "ticks");
   // Matched amount in tick, if the matched tick is sell order with base amount, amountD is quote amount to match,
   // if the matched tick is buy order with quote amount, amountD is base amount to match
-  const matched = tickInfo.isBid ? amountD * priceD : amountD / priceD;
+  const matched = counterD;
   if (tickInfo != null) {
     if (tickInfo.amount - matched < 0) {
       await Tick.delete({
@@ -246,15 +251,15 @@ export const OrderMatchedHandleOrder = async (
   // if isBid is true, quote amount is in event, if isBid is false, base amount is in event
   // the amount to match with in case of isBid=true is baseAmount, the amount to match with in case of isBid=false is quoteAmount
   // normalize the amount with appropriate decimal
-  const normalized = getVolume(
+  const amountD = getVolume(
     event.args.isBid,
     event.args.amount,
     pair.bDecimal,
     pair.qDecimal
   );
-  const decrease = event.args.isBid
-    ? normalized / order.price
-    : normalized * order.price;
+  const counterD = event.args.isBid
+    ? amountD / order.price
+    : amountD * order.price;
 
   if (event.args.clear) {
     await Order.delete({
@@ -270,7 +275,7 @@ export const OrderMatchedHandleOrder = async (
     await Order.update({
       id,
       data: {
-        placed: order.amount <= decrease ? order.amount - decrease : 0.001,
+        placed: order.amount <= counterD ? order.amount - counterD : 0,
         timestamp: event.block.timestamp,
       },
     });
@@ -302,11 +307,22 @@ export const OrderMatchedHandleOrder = async (
     },
     update: ({ current }: any) => ({
       // do not add up when sender == owner
-      totalTradeHistory: event.args.owner === event.args.sender ? current.totalTradeHistory : current.totalTradeHistory + 1,
+      totalTradeHistory: current.totalTradeHistory + 1,
     }),
   });
 
-  const historyId = event.args.owner
+  // Add Trade history for both taker and maker
+  const makerHistoryId = event.args.owner
+    .concat("-")
+    .concat(event.args.orderbook)
+    .concat("-")
+    .concat(!event.args.isBid.toString())
+    .concat("-")
+    .concat(event.args.id.toString())
+    .concat("-")
+    .concat(event.transaction.hash.toString());
+
+  const takerHistoryId = event.args.sender
     .concat("-")
     .concat(event.args.orderbook)
     .concat("-")
@@ -316,9 +332,42 @@ export const OrderMatchedHandleOrder = async (
     .concat("-")
     .concat(event.transaction.hash.toString());
 
-  // add matched order to Trade history
+  // add matched order to maker trade history
   await TradeHistory.upsert({
-    id: historyId,
+    id: makerHistoryId,
+    create: {
+      orderId: event.args.id,
+      base: pair!.base,
+      quote: pair!.quote,
+      isBid: !event.args.isBid,
+      orderbook: event.args.orderbook,
+      price: order.price,
+      amount: counterD,
+      taker: event.args.sender,
+      maker: event.args.owner,
+      account: event.args.owner,
+      timestamp: event.block.timestamp,
+      txHash: event.transaction.hash,
+    },
+    update: {
+      orderId: event.args.id,
+      base: pair!.base,
+      quote: pair!.quote,
+      isBid: !event.args.isBid,
+      orderbook: event.args.orderbook,
+      price: order.price,
+      amount: counterD,
+      taker: event.args.sender,
+      maker: event.args.owner,
+      account: event.args.owner,
+      timestamp: event.block.timestamp,
+      txHash: event.transaction.hash,
+    },
+  });
+
+  // add matched order to taker Trade history
+  await TradeHistory.upsert({
+    id: takerHistoryId,
     create: {
       orderId: event.args.id,
       base: pair!.base,
@@ -326,7 +375,7 @@ export const OrderMatchedHandleOrder = async (
       isBid: event.args.isBid,
       orderbook: event.args.orderbook,
       price: order.price,
-      amount: normalized,
+      amount: amountD,
       taker: event.args.sender,
       maker: event.args.owner,
       account: event.args.sender,
@@ -340,7 +389,7 @@ export const OrderMatchedHandleOrder = async (
       isBid: event.args.isBid,
       orderbook: event.args.orderbook,
       price: order.price,
-      amount: normalized,
+      amount: amountD,
       taker: event.args.sender,
       maker: event.args.owner,
       account: event.args.sender,
