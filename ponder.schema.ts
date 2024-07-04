@@ -161,7 +161,7 @@ export default createSchema((p) => ({
     /// orders that are already matched or canceled
     orderHistory: p.many("OrderHistory.maker"),
     /// trades that are made by the account
-    tradeHistory: p.many("Trade.maker"),
+    tradeHistory: p.many("TradeHistory.maker"),
     /// total orders that a user has currently
     totalOrders: p.int(),
     /// total order history that a user has currently

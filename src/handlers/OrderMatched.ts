@@ -146,6 +146,7 @@ export const OrderMatchedHandleTrade = async (
   const id = pair!.base
     .concat("-")
     .concat(pair!.quote)
+    .concat("-")
     .concat((!event.args.isBid).toString())
     .concat("-")
     .concat(event.args.id.toString());
@@ -300,7 +301,8 @@ export const OrderMatchedHandleOrder = async (
       totalTradeHistory: 1,
     },
     update: ({ current }: any) => ({
-      totalTradeHistory: current.totalTradeHistory + 1,
+      // do not add up when sender == owner
+      totalTradeHistory: event.args.owner === event.args.sender ? current.totalTradeHistory : current.totalTradeHistory + 1,
     }),
   });
 
