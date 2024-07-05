@@ -1,4 +1,5 @@
 import { createSchema } from "@ponder/core";
+import { timeStamp } from "console";
 
 export default createSchema((p) => ({
   Analysis: p.createTable({
@@ -50,6 +51,7 @@ export default createSchema((p) => ({
     timestamp: p.int()
   }, {
     pairIndex: p.index(["base", "quote"]),
+    timeStampIndex: p.index("timestamp").desc().nullsLast()
   }),
   HourBucket: p.createTable({
     /// {base address}-{quote address}-{hour}
@@ -80,6 +82,7 @@ export default createSchema((p) => ({
     timestamp: p.int()
   }, {
     pairIndex: p.index(["base", "quote"]),
+    timeStampIndex: p.index("timestamp").desc().nullsLast()
   }),
   DayBucket: p.createTable({
     /// {base address}-{quote address}-{hour}
@@ -110,6 +113,7 @@ export default createSchema((p) => ({
     timestamp: p.int()
   }, {
     pairIndex: p.index(["base", "quote"]),
+    timeStampIndex: p.index("timestamp").desc().nullsLast()
   }),
   Token: p.createTable({
     /// address of the token contract
