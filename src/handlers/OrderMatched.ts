@@ -39,7 +39,9 @@ const handleBucketInTime = async (
   event: any,
   pair: any,
   seconds: any,
-  contextObj: any
+  contextObj: any,
+  io: any,
+  channel: string
 ) => {
   const secondsInBI = BigInt(seconds);
   const aggregatedTime = Math.floor(
@@ -70,9 +72,51 @@ const handleBucketInTime = async (
   const baseVolume = matchedOrderType == true ? counterVolume : volume;
   const quoteVolume = matchedOrderType == false ? counterVolume : volume;
 
-  await contextObj.upsert({
-    id,
-    create: {
+  let bucket = await contextObj.findUnique({ id });
+  if (bucket) {
+    bucket = {
+      ...bucket,
+      close: priceD,
+      low: priceD < bucket.low ? priceD : bucket.low,
+      high: priceD > bucket.high ? priceD : bucket.high,
+      average: (bucket.average * bucket.count + priceD) / (bucket.count + 1),
+      count: bucket.count + 1,
+      baseVolume: bucket.baseVolume + baseVolume,
+      quoteVolume: bucket.quoteVolume + quoteVolume,
+    };
+    await contextObj.update({
+      id,
+      data: {
+        close: priceD,
+        low: priceD < bucket.low ? priceD : bucket.low,
+        high: priceD > bucket.high ? priceD : bucket.high,
+        average: (bucket.average * bucket.count + priceD) / (bucket.count + 1),
+        count: bucket.count + 1,
+        baseVolume: bucket.baseVolume + baseVolume,
+        quoteVolume: bucket.quoteVolume + quoteVolume,
+      },
+    });
+    io.emit(channel, bucket);
+  } else {
+    await contextObj.create({
+      id,
+      data: {
+        orderbook: event.args.orderbook,
+        base: pair.base,
+        quote: pair.quote,
+        open: priceD,
+        close: priceD,
+        low: priceD,
+        high: priceD,
+        average: priceD,
+        count: 1,
+        baseVolume,
+        quoteVolume,
+        timestamp: aggregatedTime,
+      },
+    });
+    io.emit(channel, {
+      id,
       orderbook: event.args.orderbook,
       base: pair.base,
       quote: pair.quote,
@@ -85,41 +129,35 @@ const handleBucketInTime = async (
       baseVolume,
       quoteVolume,
       timestamp: aggregatedTime,
-    },
-    update: ({ current }: any) => ({
-      close: priceD,
-      low: current.low > priceD ? priceD : current.low,
-      high: current.high < priceD ? priceD : current.high,
-      average: (current.average * current.count + priceD) / (current.count + 1),
-      count: current.count + 1,
-      baseVolume: current.baseVolume + baseVolume,
-      quoteVolume: current.quoteVolume + quoteVolume,
-    }),
-  });
+    });
+  }
 };
 
 export const OrderMatchedHandleMinBuckets = async (
   event: any,
   pair: any,
-  MinBucket: any
+  MinBucket: any,
+  io: any
 ) => {
-  await handleBucketInTime(event, pair, 60, MinBucket);
+  await handleBucketInTime(event, pair, 60, MinBucket, io, "min");
 };
 
 export const OrderMatchedHandleDayBuckets = async (
   event: any,
   pair: any,
-  DayBucket: any
+  DayBucket: any,
+  io: any
 ) => {
-  await handleBucketInTime(event, pair, 60 * 60 * 24, DayBucket);
+  await handleBucketInTime(event, pair, 60 * 60 * 24, DayBucket, io, "day");
 };
 
 export const OrderMatchedHandleHourBuckets = async (
   event: any,
   pair: any,
-  HourBucket: any
+  HourBucket: any,
+  io: any
 ) => {
-  await handleBucketInTime(event, pair, 60 * 60, HourBucket);
+  await handleBucketInTime(event, pair, 60 * 60, HourBucket, io, "hour");
 };
 
 export const OrderMatchedHandleBuckets = async (
@@ -127,11 +165,12 @@ export const OrderMatchedHandleBuckets = async (
   pair: any,
   DayBucket: any,
   HourBucket: any,
-  MinBucket: any
+  MinBucket: any,
+  io: any
 ) => {
-  await OrderMatchedHandleDayBuckets(event, pair, DayBucket);
-  await OrderMatchedHandleHourBuckets(event, pair, HourBucket);
-  await OrderMatchedHandleMinBuckets(event, pair, MinBucket);
+  await OrderMatchedHandleDayBuckets(event, pair, DayBucket, io);
+  await OrderMatchedHandleHourBuckets(event, pair, HourBucket, io);
+  await OrderMatchedHandleMinBuckets(event, pair, MinBucket, io);
 };
 
 export const OrderMatchedHandleTrade = async (
@@ -161,7 +200,6 @@ export const OrderMatchedHandleTrade = async (
   );
   // counter amount in decimal, when isBid is true, counter is base amount, when isBid is false, counter is quote amount
   const counterD = event.args.isBid ? amountD / priceD : amountD * priceD;
-
 
   // upsert Trade as the order rewrites on the id circulating with uint32.max
   await Trade.upsert({

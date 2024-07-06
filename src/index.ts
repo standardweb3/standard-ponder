@@ -11,6 +11,8 @@ import {
 } from "./handlers";
 import { formatUnits } from "viem";
 
+import io from "./server"
+
 // const knock = new Knock(process.env.KNOCK_API_KEY);
 
 ponder.on("matchingEngine:PairAdded", async ({ event, context }) => {
@@ -66,7 +68,8 @@ ponder.on("matchingEngine:OrderMatched", async ({ event, context }) => {
     pair,
     DayBucket,
     HourBucket,
-    MinBucket
+    MinBucket,
+    io
   );
 
   // Update Order info
