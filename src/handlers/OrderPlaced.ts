@@ -116,7 +116,7 @@ export const OrderPlacedHandleAccountOrders = async (
 
   // upsert tick in a placed price with a unique id
   const tickId = event.args.orderbook.concat("-").concat((event.args.isBid).toString()).concat("-").concat(event.args.price.toString());
-  console.log("placed", tickId )
+  //console.log("placed", tickId )
   await Tick.upsert({
     id: tickId,
     create: {
