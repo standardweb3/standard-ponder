@@ -5,13 +5,14 @@ import {
   OrderMatchedHandleBuckets,
   OrderMatchedHandleOrder,
   OrderMatchedHandleTrade,
-  OrderMatchedHandleToken,
   OrderPlacedHandleAccountOrders,
   PairAddedHandleTokenPairOrderbook,
+  NewMarketPriceHandleBuckets,
+  NewMarketPriceHandleToken,
 } from "./handlers";
 import { formatUnits } from "viem";
 
-import io from "./server"
+import io from "./server";
 
 // const knock = new Knock(process.env.KNOCK_API_KEY);
 
@@ -48,7 +49,11 @@ ponder.on("matchingEngine:OrderMatched", async ({ event, context }) => {
   });
 
   // Get tick info
-  const tickId = event.args.orderbook.concat("-").concat(!event.args.isBid.toString()).concat("-").concat(event.args.price.toString());
+  const tickId = event.args.orderbook
+    .concat("-")
+    .concat(!event.args.isBid.toString())
+    .concat("-")
+    .concat(event.args.price.toString());
   //console.log("matched", tickId);
   const tickInfo = await Tick.findUnique({
     id: tickId,
@@ -56,11 +61,16 @@ ponder.on("matchingEngine:OrderMatched", async ({ event, context }) => {
 
   const chainId = context.network.chainId;
 
-  // Update token info
-  await OrderMatchedHandleToken(event, pair, chainId, Token);
-
   // Update trade info
-  await OrderMatchedHandleTrade(event, chainId, Analysis, pair, Trade, Tick, tickInfo);
+  await OrderMatchedHandleTrade(
+    event,
+    chainId,
+    Analysis,
+    pair,
+    Trade,
+    Tick,
+    tickInfo
+  );
 
   // Update trade buckets
   await OrderMatchedHandleBuckets(
@@ -73,17 +83,28 @@ ponder.on("matchingEngine:OrderMatched", async ({ event, context }) => {
   );
 
   // Update Order info
-  await OrderMatchedHandleOrder(event,  pair, Account, Order, TradeHistory);
+  await OrderMatchedHandleOrder(event, pair, Account, Order, TradeHistory);
+});
+
+
+ponder.on("matchingEngine:NewMarketPrice", async ({ event, context }) => {
+  const { DayBucket, HourBucket, MinBucket, Pair, Token } = context.db;
+
+  const chainId = context.network.chainId;
+
+  // Get Pair Info
+  const pair = await Pair.findUnique({
+    id: event.args.orderbook,
+  });
+
+  // Update token info
+  await NewMarketPriceHandleToken(event, pair, chainId, Token);
+
+  await NewMarketPriceHandleBuckets(event, pair, DayBucket, HourBucket, MinBucket, io);
 });
 
 ponder.on("matchingEngine:OrderPlaced", async ({ event, context }) => {
-  const {
-    Account,
-    Order,
-    Pair,
-    OrderHistory,
-    Tick
-  } = context.db;
+  const { Account, Order, Pair, OrderHistory, Tick } = context.db;
   const pair = await Pair.findUnique({
     id: event.args.orderbook,
   });
@@ -98,41 +119,30 @@ ponder.on("matchingEngine:OrderPlaced", async ({ event, context }) => {
   );
 });
 
+
 ponder.on("matchingEngine:OrderCanceled", async ({ event, context }) => {
-  const {
-    Order,
-    OrderHistory,
-    Account,
-    Pair
-  } = context.db;
+  const { Order, OrderHistory, Account, Pair } = context.db;
   const pair = await Pair.findUnique({
     id: event.args.orderbook,
-  })
+  });
 
-  await OrderCanceledHandleOrder(
-    event,
-    Account,
-    pair,
-    Order,
-    OrderHistory
-  );
-  
+  await OrderCanceledHandleOrder(event, Account, pair, Order, OrderHistory);
 });
 
 //@ts-ignore
 ponder.on("stndxp:Transfer", async ({ event, context }) => {
   const { PointAccount } = context.db;
   // @ts-ignore
-  if(event.args.from === "0x0000000000000000000000000000000000000000"){
+  if (event.args.from === "0x0000000000000000000000000000000000000000") {
     PointAccount.upsert({
       // @ts-ignore
       id: event.args.to,
       create: {
-        points: formatUnits(event.args.value, 18)
+        points: formatUnits(event.args.value, 18),
       },
       update: ({ current }: any) => ({
-        points: current.points + formatUnits(event.args.value, 18)
-      })
-    })
+        points: current.points + formatUnits(event.args.value, 18),
+      }),
+    });
   }
-})
+});

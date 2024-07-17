@@ -20,7 +20,12 @@ export const MatchingEngineABI = [
     "name": "addPair",
     "inputs": [
       { "name": "base", "type": "address", "internalType": "address" },
-      { "name": "quote", "type": "address", "internalType": "address" }
+      { "name": "quote", "type": "address", "internalType": "address" },
+      {
+        "name": "initMarketPrice",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
     ],
     "outputs": [
       { "name": "book", "type": "address", "internalType": "address" }
@@ -34,8 +39,7 @@ export const MatchingEngineABI = [
       { "name": "base", "type": "address", "internalType": "address" },
       { "name": "quote", "type": "address", "internalType": "address" },
       { "name": "isBid", "type": "bool", "internalType": "bool" },
-      { "name": "orderId", "type": "uint32", "internalType": "uint32" },
-      { "name": "uid", "type": "uint32", "internalType": "uint32" }
+      { "name": "orderId", "type": "uint32", "internalType": "uint32" }
     ],
     "outputs": [
       { "name": "refunded", "type": "uint256", "internalType": "uint256" }
@@ -49,8 +53,7 @@ export const MatchingEngineABI = [
       { "name": "base", "type": "address[]", "internalType": "address[]" },
       { "name": "quote", "type": "address[]", "internalType": "address[]" },
       { "name": "isBid", "type": "bool[]", "internalType": "bool[]" },
-      { "name": "orderIds", "type": "uint32[]", "internalType": "uint32[]" },
-      { "name": "uid", "type": "uint32", "internalType": "uint32" }
+      { "name": "orderIds", "type": "uint32[]", "internalType": "uint32[]" }
     ],
     "outputs": [
       { "name": "refunded", "type": "uint256[]", "internalType": "uint256[]" }
@@ -556,31 +559,14 @@ export const MatchingEngineABI = [
   },
   {
     "type": "function",
-    "name": "rematchOrder",
-    "inputs": [
-      { "name": "base", "type": "address", "internalType": "address" },
-      { "name": "quote", "type": "address", "internalType": "address" },
-      { "name": "price", "type": "uint256", "internalType": "uint256" },
-      { "name": "isBid", "type": "bool", "internalType": "bool" },
-      { "name": "orderId", "type": "uint32", "internalType": "uint32" },
-      { "name": "isMarket", "type": "bool", "internalType": "bool" },
-      { "name": "isMaker", "type": "bool", "internalType": "bool" },
-      { "name": "n", "type": "uint32", "internalType": "uint32" },
-      { "name": "uid", "type": "uint32", "internalType": "uint32" }
-    ],
-    "outputs": [
-      { "name": "makePrice", "type": "uint256", "internalType": "uint256" },
-      { "name": "matched", "type": "uint256", "internalType": "uint256" },
-      { "name": "placed", "type": "uint256", "internalType": "uint256" }
-    ],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
     "name": "renounceRole",
     "inputs": [
       { "name": "role", "type": "bytes32", "internalType": "bytes32" },
-      { "name": "account", "type": "address", "internalType": "address" }
+      {
+        "name": "callerConfirmation",
+        "type": "address",
+        "internalType": "address"
+      }
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
@@ -597,11 +583,25 @@ export const MatchingEngineABI = [
   },
   {
     "type": "function",
+    "name": "setDefaultSpread",
+    "inputs": [
+      { "name": "buy", "type": "uint32", "internalType": "uint32" },
+      { "name": "sell", "type": "uint32", "internalType": "uint32" }
+    ],
+    "outputs": [
+      { "name": "success", "type": "bool", "internalType": "bool" }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "setFeeTo",
     "inputs": [
       { "name": "feeTo_", "type": "address", "internalType": "address" }
     ],
-    "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+    "outputs": [
+      { "name": "success", "type": "bool", "internalType": "bool" }
+    ],
     "stateMutability": "nonpayable"
   },
   {
@@ -610,10 +610,12 @@ export const MatchingEngineABI = [
     "inputs": [
       { "name": "base", "type": "address", "internalType": "address" },
       { "name": "quote", "type": "address", "internalType": "address" },
-      { "name": "market", "type": "uint32", "internalType": "uint32" },
-      { "name": "limit", "type": "uint32", "internalType": "uint32" }
+      { "name": "buy", "type": "uint32", "internalType": "uint32" },
+      { "name": "sell", "type": "uint32", "internalType": "uint32" }
     ],
-    "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+    "outputs": [
+      { "name": "success", "type": "bool", "internalType": "bool" }
+    ],
     "stateMutability": "nonpayable"
   },
   {
@@ -621,8 +623,8 @@ export const MatchingEngineABI = [
     "name": "spreadLimits",
     "inputs": [{ "name": "", "type": "address", "internalType": "address" }],
     "outputs": [
-      { "name": "limit", "type": "uint32", "internalType": "uint32" },
-      { "name": "market", "type": "uint32", "internalType": "uint32" }
+      { "name": "buy", "type": "uint32", "internalType": "uint32" },
+      { "name": "sell", "type": "uint32", "internalType": "uint32" }
     ],
     "stateMutability": "view"
   },
@@ -641,9 +643,28 @@ export const MatchingEngineABI = [
     "inputs": [
       {
         "name": "version",
-        "type": "uint8",
+        "type": "uint64",
         "indexed": false,
-        "internalType": "uint8"
+        "internalType": "uint64"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "NewMarketPrice",
+    "inputs": [
+      {
+        "name": "orderbook",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      },
+      {
+        "name": "price",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
       }
     ],
     "anonymous": false
@@ -926,6 +947,16 @@ export const MatchingEngineABI = [
     ],
     "anonymous": false
   },
+  { "type": "error", "name": "AccessControlBadConfirmation", "inputs": [] },
+  {
+    "type": "error",
+    "name": "AccessControlUnauthorizedAccount",
+    "inputs": [
+      { "name": "account", "type": "address", "internalType": "address" },
+      { "name": "neededRole", "type": "bytes32", "internalType": "bytes32" }
+    ]
+  },
+  { "type": "error", "name": "AmountIsZero", "inputs": [] },
   {
     "type": "error",
     "name": "AskPriceTooHigh",
@@ -952,6 +983,7 @@ export const MatchingEngineABI = [
       { "name": "feeDenom", "type": "uint256", "internalType": "uint256" }
     ]
   },
+  { "type": "error", "name": "InvalidInitialization", "inputs": [] },
   {
     "type": "error",
     "name": "InvalidPair",
@@ -992,6 +1024,7 @@ export const MatchingEngineABI = [
       { "name": "newImpl", "type": "address", "internalType": "address" }
     ]
   },
+  { "type": "error", "name": "NotInitializing", "inputs": [] },
   {
     "type": "error",
     "name": "OrderSizeTooSmall",
@@ -1009,6 +1042,7 @@ export const MatchingEngineABI = [
       { "name": "pair", "type": "address", "internalType": "address" }
     ]
   },
+  { "type": "error", "name": "ReentrancyGuardReentrantCall", "inputs": [] },
   {
     "type": "error",
     "name": "TooManyMatches",

@@ -12,3 +12,11 @@ export {
 export {
     PairAddedHandleTokenPairOrderbook
 } from "./PairAdded"
+
+export {
+    NewMarketPriceHandleMinBuckets,
+    NewMarketPriceHandleDayBuckets,
+    NewMarketPriceHandleHourBuckets,
+    NewMarketPriceHandleBuckets,
+    NewMarketPriceHandleToken
+} from "./NewMarketPrice"
