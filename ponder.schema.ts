@@ -215,7 +215,9 @@ export default createSchema((p) => ({
     /// price
     price: p.float(),
     /// total amount of order stored in the price
-    amount: p.float()
+    amount: p.float(),
+    /// total order count in the price
+    count: p.float()
   }, {
     tickIndex: p.index(["isBid", "price"]),
   }),

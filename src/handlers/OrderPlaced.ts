@@ -124,9 +124,11 @@ export const OrderPlacedHandleAccountOrders = async (
       isBid: event.args.isBid,
       price: priceD,
       amount: amountD,
+      count: 1
     }, update({ current }: any) {
       return {
         amount: current.amount + amountD,
+        count: current.count + 1,
       };
     }
   });

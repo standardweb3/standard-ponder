@@ -238,11 +238,12 @@ export const OrderMatchedHandleTrade = async (
     .concat(!event.args.isBid.toString())
     .concat("-")
     .concat(event.args.price.toString());
+
   // Matched amount in tick, if the matched tick is sell order with base amount, amountD is quote amount to match,
   // if the matched tick is buy order with quote amount, amountD is base amount to match
   const matched = counterD;
   if (tickInfo != null) {
-    if (tickInfo.amount - matched < 0) {
+    if (event.args.clear && tickInfo.count - 1 == 0) {
       await Tick.delete({
         id: tickId,
       });
@@ -250,7 +251,8 @@ export const OrderMatchedHandleTrade = async (
       await Tick.update({
         id: tickId,
         data: ({ current }: any) => ({
-          amount: current.amount - matched,
+          amount: current.amount - matched < 0 ? 0 : current.amount - matched,
+          count: event.args.clear ? current.count - 1 : current.count,
         }),
       });
     }
