@@ -1,5 +1,6 @@
 import { formatUnits } from "viem";
 import { Stablecoin } from "../consts/stablecoin";
+import { count } from "console";
 
 export const OrderMatchedHandleToken = async (
   event: any,
@@ -352,7 +353,7 @@ export const OrderMatchedHandleOrder = async (
     await Order.update({
       id,
       data: {
-        placed: order.amount <= counterD ? order.amount - counterD : 0,
+        placed: order.amount - counterD,
         timestamp: Number(event.block.timestamp),
       },
     });
@@ -361,7 +362,7 @@ export const OrderMatchedHandleOrder = async (
     await io.emit("order", {
       ...order,
       id,
-      placed: order.amount <= counterD ? order.amount - counterD : 0,
+      placed: order.amount - counterD,
       timestamp: Number(event.block.timestamp),
     });
   }
