@@ -1,6 +1,5 @@
 import { formatUnits } from "viem";
 import { Stablecoin } from "../consts/stablecoin";
-import { count } from "console";
 
 export const OrderMatchedHandleToken = async (
   event: any,
@@ -319,8 +318,6 @@ export const OrderMatchedHandleOrder = async (
     id,
   });
 
-  const priceD = parseFloat(formatUnits(event.args.price, 8));
-
   // if isBid is true, quote amount is in event, if isBid is false, base amount is in event
   // the amount sender deposited if isBid=true is quoteAmount, the amount sender deposited if isBid=false is baseAmount
   // normalize the amount with appropriate decimal
@@ -331,7 +328,7 @@ export const OrderMatchedHandleOrder = async (
     pair.qDecimal
   );
   // counter amount in decimal, when isBid is true, counter is base amount, when isBid is false, counter is quote amount
-  const counterD = event.args.isBid ? amountD / priceD : amountD * priceD;
+  const counterD = event.args.isBid ? amountD / order.price : amountD * order.price;
 
   if (event.args.clear) {
     await Order.delete({
@@ -353,7 +350,7 @@ export const OrderMatchedHandleOrder = async (
     await Order.update({
       id,
       data: {
-        placed: order.amount - counterD,
+        placed: order.placed >= counterD ? order.placed - counterD : 0,
         timestamp: Number(event.block.timestamp),
       },
     });
@@ -362,7 +359,7 @@ export const OrderMatchedHandleOrder = async (
     await io.emit("order", {
       ...order,
       id,
-      placed: order.amount - counterD,
+      placed: order.placed >= counterD ? order.placed - counterD : 0,
       timestamp: Number(event.block.timestamp),
     });
   }
