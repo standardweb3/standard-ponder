@@ -21,7 +21,8 @@ export const OrderPlacedHandleAccountOrders = async (
   Account: any,
   Order: any,
   OrderHistory: any,
-  Tick: any
+  Tick: any,
+  io: any
 ) => {
   const id = event.args.owner
     .concat("-")
@@ -33,9 +34,19 @@ export const OrderPlacedHandleAccountOrders = async (
 
   const priceD = parseFloat(formatUnits(event.args.price, 8));
 
-  const amountD = getVolume(event.args.isBid, event.args.withoutFee, pair.bDecimal, pair.qDecimal);
-  
-  const placedD = getVolume(event.args.isBid, event.args.placed, pair.bDecimal, pair.qDecimal);
+  const amountD = getVolume(
+    event.args.isBid,
+    event.args.withoutFee,
+    pair.bDecimal,
+    pair.qDecimal
+  );
+
+  const placedD = getVolume(
+    event.args.isBid,
+    event.args.placed,
+    pair.bDecimal,
+    pair.qDecimal
+  );
 
   const timestamp = Number(event.block.timestamp);
 
@@ -84,6 +95,21 @@ export const OrderPlacedHandleAccountOrders = async (
       txHash: event.transaction.hash,
     },
   });
+  // report to client
+  await io.emit("order", {
+    id,
+    orderId: event.args.id,
+    isBid: event.args.isBid,
+    base: pair!.base,
+    quote: pair!.quote,
+    orderbook: event.args.orderbook,
+    price: priceD,
+    amount: amountD,
+    placed: placedD,
+    timestamp: event.block.timestamp,
+    account: event.args.owner,
+    txHash: event.transaction.hash,
+  });
 
   // upsert OrderHistory as the order rewrites on the id circulating with uint32.max
   await OrderHistory.upsert({
@@ -113,10 +139,27 @@ export const OrderPlacedHandleAccountOrders = async (
       txHash: event.transaction.hash,
     },
   });
+  // report to client
+  await io.emit("orderHistory", {
+    id,
+    orderId: event.args.id,
+    isBid: event.args.isBid,
+    base: pair!.base,
+    quote: pair!.quote,
+    orderbook: event.args.orderbook,
+    price: priceD,
+    amount: amountD,
+    timestamp: event.block.timestamp,
+    account: event.args.owner,
+    txHash: event.transaction.hash,
+  })
 
   // upsert tick in a placed price with a unique id
-  const tickId = event.args.orderbook.concat("-").concat((event.args.isBid).toString()).concat("-").concat(event.args.price.toString());
-  //console.log("placed", tickId )
+  const tickId = event.args.orderbook
+    .concat("-")
+    .concat(event.args.isBid.toString())
+    .concat("-")
+    .concat(event.args.price.toString());
   await Tick.upsert({
     id: tickId,
     create: {
@@ -124,12 +167,23 @@ export const OrderPlacedHandleAccountOrders = async (
       isBid: event.args.isBid,
       price: priceD,
       amount: amountD,
-      count: 1
-    }, update({ current }: any) {
+      count: 1,
+    },
+    update({ current }: any) {
       return {
         amount: current.amount + amountD,
         count: current.count + 1,
       };
-    }
+    },
   });
+
+  // report to tlicnt
+  await io.emit("tick", {
+    id: tickId,
+    orderbook: event.args.orderbook,
+    isBid: event.args.isBid,
+    price: priceD,
+    amount: amountD,
+    count: 1,
+  })
 };

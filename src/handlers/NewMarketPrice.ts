@@ -72,7 +72,7 @@ const handleBucketInTime = async (
         count: bucket.count + 1,
       },
     });
-    io.emit(channel, bucket);
+    await io.emit(channel, bucket);
   } else {
     await contextObj.create({
       id,
@@ -91,7 +91,7 @@ const handleBucketInTime = async (
         timestamp: aggregatedTime,
       },
     });
-    io.emit(channel, {
+    await io.emit(channel, {
       id,
       orderbook: event.args.orderbook,
       base: pair.base,

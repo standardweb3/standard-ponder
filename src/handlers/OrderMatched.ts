@@ -96,7 +96,7 @@ const handleBucketInTime = async (
         quoteVolume: bucket.quoteVolume + quoteVolume,
       },
     });
-    io.emit(channel, bucket);
+    await io.emit(channel, bucket);
   } else {
     await contextObj.create({
       id,
@@ -115,7 +115,7 @@ const handleBucketInTime = async (
         timestamp: aggregatedTime,
       },
     });
-    io.emit(channel, {
+    await io.emit(channel, {
       id,
       orderbook: event.args.orderbook,
       base: pair.base,
@@ -180,7 +180,8 @@ export const OrderMatchedHandleTrade = async (
   pair: any,
   Trade: any,
   Tick: any,
-  tickInfo: any
+  tickInfo: any,
+  io: any
 ) => {
   const id = pair!.base
     .concat("-")
@@ -232,6 +233,22 @@ export const OrderMatchedHandleTrade = async (
     },
   });
 
+  // report to client
+  await io.emit("trade", {
+    id,
+    orderId: event.args.id,
+    base: pair!.base,
+    quote: pair!.quote,
+    isBid: event.args.isBid,
+    price: priceD,
+    baseAmount: event.args.isBid ? counterD : amountD,
+    quoteAmount: event.args.isBid ? amountD : counterD,
+    taker: event.args.sender,
+    maker: event.args.owner,
+    timestamp: event.block.timestamp,
+    txHash: event.transaction.hash,
+  });
+
   // Subtract matched amount in tick
   const tickId = event.args.orderbook
     .concat("-")
@@ -247,6 +264,10 @@ export const OrderMatchedHandleTrade = async (
       await Tick.delete({
         id: tickId,
       });
+      // report to client
+      await io.emit("deleteTick", {
+        id: tickId
+      })
     } else {
       await Tick.update({
         id: tickId,
@@ -255,8 +276,18 @@ export const OrderMatchedHandleTrade = async (
           count: event.args.clear ? current.count - 1 : current.count,
         }),
       });
+      // report to client
+      await io.emit("tick", {
+        id: tickId,
+        orderbook: event.args.orderbook,
+        price: priceD,
+        amount: tickInfo?.amount - matched < 0 ? 0 : tickInfo?.amount - matched,
+        count: event.args.clear ? tickInfo?.count - 1 : tickInfo?.count,
+      });
     }
   }
+
+  
 
   await Analysis.upsert({
     id: chainId,
@@ -274,7 +305,8 @@ export const OrderMatchedHandleOrder = async (
   pair: any,
   Account: any,
   Order: any,
-  TradeHistory: any
+  TradeHistory: any,
+  io: any
 ) => {
   const id = event.args.owner
     .concat("-")
@@ -305,6 +337,12 @@ export const OrderMatchedHandleOrder = async (
     await Order.delete({
       id,
     });
+
+    // report to client
+    await io.emit("deleteOrder", {
+      id
+    });
+
     Account.update({
       id: event.args.owner,
       data: ({ current }: any) => ({
@@ -318,6 +356,14 @@ export const OrderMatchedHandleOrder = async (
         placed: order.amount <= counterD ? order.amount - counterD : 0,
         timestamp: event.block.timestamp,
       },
+    });
+
+    // report to client
+    await io.emit("order", {
+      ...order,
+      id,
+      placed: order.amount <= counterD ? order.amount - counterD : 0,
+      timestamp: event.block.timestamp,
     });
   }
 
@@ -373,6 +419,7 @@ export const OrderMatchedHandleOrder = async (
     .concat(event.transaction.hash.toString());
 
   // add matched order to maker trade history
+  
   await TradeHistory.upsert({
     id: makerHistoryId,
     create: {
@@ -403,6 +450,22 @@ export const OrderMatchedHandleOrder = async (
       timestamp: event.block.timestamp,
       txHash: event.transaction.hash,
     },
+  });
+  // Report to client
+  await io.emit("tradeHistory", {
+    id: makerHistoryId,
+    orderId: event.args.id,
+    base: pair!.base,
+    quote: pair!.quote,
+    isBid: !event.args.isBid,
+    orderbook: event.args.orderbook,
+    price: order.price,
+    amount: counterD,
+    taker: event.args.sender,
+    maker: event.args.owner,
+    account: event.args.owner,
+    timestamp: event.block.timestamp,
+    txHash: event.transaction.hash,
   });
 
   // add matched order to taker Trade history
@@ -436,5 +499,21 @@ export const OrderMatchedHandleOrder = async (
       timestamp: event.block.timestamp,
       txHash: event.transaction.hash,
     },
+  });
+  // report to client
+  await io.emit("tradeHistory", {
+    id: takerHistoryId,
+    orderId: event.args.id,
+    base: pair!.base,
+    quote: pair!.quote,
+    isBid: event.args.isBid,
+    orderbook: event.args.orderbook,
+    price: order.price,
+    amount: amountD,
+    taker: event.args.sender,
+    maker: event.args.owner,
+    account: event.args.sender,
+    timestamp: event.block.timestamp,
+    txHash: event.transaction.hash,
   });
 };

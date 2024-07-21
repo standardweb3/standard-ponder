@@ -69,7 +69,8 @@ ponder.on("matchingEngine:OrderMatched", async ({ event, context }) => {
     pair,
     Trade,
     Tick,
-    tickInfo
+    tickInfo,
+    io
   );
 
   // Update trade buckets
@@ -83,7 +84,7 @@ ponder.on("matchingEngine:OrderMatched", async ({ event, context }) => {
   );
 
   // Update Order info
-  await OrderMatchedHandleOrder(event, pair, Account, Order, TradeHistory);
+  await OrderMatchedHandleOrder(event, pair, Account, Order, TradeHistory, io);
 });
 
 
@@ -115,7 +116,8 @@ ponder.on("matchingEngine:OrderPlaced", async ({ event, context }) => {
     Account,
     Order,
     OrderHistory,
-    Tick
+    Tick,
+    io
   );
 });
 
@@ -126,7 +128,7 @@ ponder.on("matchingEngine:OrderCanceled", async ({ event, context }) => {
     id: event.args.orderbook,
   });
 
-  await OrderCanceledHandleOrder(event, Account, pair, Order, OrderHistory);
+  await OrderCanceledHandleOrder(event, Account, pair, Order, OrderHistory, io);
 });
 
 //@ts-ignore

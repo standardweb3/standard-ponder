@@ -5,7 +5,8 @@ export const OrderCanceledHandleOrder = async (
   Account: any,
   pair: any,
   Order: any,
-  OrderHistory: any
+  OrderHistory: any,
+  io: any
 ) => {
   const id = event.args.owner
     .concat("-")
@@ -30,12 +31,23 @@ export const OrderCanceledHandleOrder = async (
     await OrderHistory.delete({
       id,
     });
+
+    // report to client
+    await io.emit("deleteOrder", {
+      id
+    });
   } else {
     await OrderHistory.update({
       id,
       data: {
         amount: canceled!.amount - amountD,
       },
+    });
+
+    // report to client
+    await io.emit("orderHistory", {
+      ...canceled,
+      amount: canceled!.amount - amountD,
     });
   }
 
@@ -49,6 +61,11 @@ export const OrderCanceledHandleOrder = async (
 
   await Order.delete({
     id,
+  });
+
+  // report to client
+  await io.emit("deleteOrder", {
+    id
   });
 };
 
