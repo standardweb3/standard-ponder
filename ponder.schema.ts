@@ -133,7 +133,7 @@ export default createSchema((p) => ({
     /// identifier for a trade
     id: p.string(),
     /// order id which was matched
-    orderId: p.bigint(),
+    orderId: p.int(),
     /// base info
     base: p.string(),
     /// quote info
@@ -147,7 +147,7 @@ export default createSchema((p) => ({
     /// traded quote token amount on isBid == false, traded base token amount on isBid == true
     quoteAmount: p.float(),
     /// submitted timestamp
-    timestamp: p.bigint(),
+    timestamp: p.int(),
     /// taker of the matched order in the orderbook
     taker: p.string(),
     /// maker of the matched order in the orderbook
@@ -225,7 +225,7 @@ export default createSchema((p) => ({
     // a unique identifier
     id: p.string(),
     /// placed order id
-    orderId: p.bigint(),
+    orderId: p.int(),
     /// order type (bid(buy) if true, ask(sell) if false)
     isBid: p.boolean(),
     /// base token address
@@ -239,7 +239,7 @@ export default createSchema((p) => ({
     /// deposit asset amount
     amount: p.float(),
     /// submitted timestamp
-    timestamp: p.bigint(),
+    timestamp: p.int(),
     /// wallet address who made an order
     maker: p.string().references("Account.id"),
     /// wallet address who took an order
@@ -255,7 +255,7 @@ export default createSchema((p) => ({
     // a unique identifier
     id: p.string(),
     /// placed order id
-    orderId: p.bigint(),
+    orderId: p.int(),
     /// order type (bid(buy) if true, ask(sell) if false)
     isBid: p.boolean(),
     /// base token address
@@ -269,7 +269,7 @@ export default createSchema((p) => ({
     /// deposit asset amount
     amount: p.float(),
     /// submitted timestamp
-    timestamp: p.bigint(),
+    timestamp: p.int(),
     /// wallet address who send the transaction in an order
     account: p.string().references("Account.id"),
     /// transaction hash 
@@ -283,7 +283,7 @@ export default createSchema((p) => ({
     /// order type (bid(buy) if true, ask(sell) if false)
     isBid: p.boolean(),
     /// placed order id
-    orderId: p.bigint(),
+    orderId: p.int(),
     /// base token address
     base: p.string(),
     /// quote token address
@@ -297,7 +297,7 @@ export default createSchema((p) => ({
     /// placed asset amount
     placed: p.float(),
     /// submitted timestamp
-    timestamp: p.bigint(),
+    timestamp: p.int(),
     /// wallet address who made an order
     account: p.string().references("Account.id"),
     /// transaction hash

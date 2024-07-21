@@ -206,7 +206,7 @@ export const OrderMatchedHandleTrade = async (
   await Trade.upsert({
     id,
     create: {
-      orderId: event.args.id,
+      orderId: Number(event.args.id),
       base: pair!.base,
       quote: pair!.quote,
       isBid: event.args.isBid,
@@ -215,11 +215,11 @@ export const OrderMatchedHandleTrade = async (
       quoteAmount: event.args.isBid ? amountD : counterD,
       taker: event.args.sender,
       maker: event.args.owner,
-      timestamp: event.block.timestamp,
+      timestamp: Number(event.block.timestamp),
       txHash: event.transaction.hash,
     },
     update: {
-      orderId: event.args.id,
+      orderId: Number(event.args.id),
       base: pair!.base,
       quote: pair!.quote,
       isBid: event.args.isBid,
@@ -228,7 +228,7 @@ export const OrderMatchedHandleTrade = async (
       quoteAmount: event.args.isBid ? amountD : counterD,
       taker: event.args.sender,
       maker: event.args.owner,
-      timestamp: event.block.timestamp,
+      timestamp: Number(event.block.timestamp),
       txHash: event.transaction.hash,
     },
   });
@@ -236,7 +236,7 @@ export const OrderMatchedHandleTrade = async (
   // report to client
   await io.emit("trade", {
     id,
-    orderId: event.args.id,
+    orderId: Number(event.args.id),
     base: pair!.base,
     quote: pair!.quote,
     isBid: event.args.isBid,
@@ -245,7 +245,7 @@ export const OrderMatchedHandleTrade = async (
     quoteAmount: event.args.isBid ? amountD : counterD,
     taker: event.args.sender,
     maker: event.args.owner,
-    timestamp: event.block.timestamp,
+    timestamp: Number(event.block.timestamp),
     txHash: event.transaction.hash,
   });
 
@@ -287,8 +287,6 @@ export const OrderMatchedHandleTrade = async (
     }
   }
 
-  
-
   await Analysis.upsert({
     id: chainId,
     create: {
@@ -321,7 +319,7 @@ export const OrderMatchedHandleOrder = async (
   });
 
   // if isBid is true, quote amount is in event, if isBid is false, base amount is in event
-  // the amount to match with in case of isBid=true is baseAmount, the amount to match with in case of isBid=false is quoteAmount
+  // the amount sender deposited if isBid=true is quoteAmount, the amount sender deposited if isBid=false is baseAmount
   // normalize the amount with appropriate decimal
   const amountD = getVolume(
     event.args.isBid,
@@ -329,6 +327,7 @@ export const OrderMatchedHandleOrder = async (
     pair.bDecimal,
     pair.qDecimal
   );
+  // counter amount in decimal, when isBid is true, counter is base amount, when isBid is false, counter is quote amount
   const counterD = event.args.isBid
     ? amountD / order.price
     : amountD * order.price;
@@ -354,7 +353,7 @@ export const OrderMatchedHandleOrder = async (
       id,
       data: {
         placed: order.amount <= counterD ? order.amount - counterD : 0,
-        timestamp: event.block.timestamp,
+        timestamp: Number(event.block.timestamp),
       },
     });
 
@@ -363,7 +362,7 @@ export const OrderMatchedHandleOrder = async (
       ...order,
       id,
       placed: order.amount <= counterD ? order.amount - counterD : 0,
-      timestamp: event.block.timestamp,
+      timestamp: Number(event.block.timestamp),
     });
   }
 
@@ -423,7 +422,7 @@ export const OrderMatchedHandleOrder = async (
   await TradeHistory.upsert({
     id: makerHistoryId,
     create: {
-      orderId: event.args.id,
+      orderId: Number(event.args.id),
       base: pair!.base,
       quote: pair!.quote,
       isBid: !event.args.isBid,
@@ -433,11 +432,11 @@ export const OrderMatchedHandleOrder = async (
       taker: event.args.sender,
       maker: event.args.owner,
       account: event.args.owner,
-      timestamp: event.block.timestamp,
+      timestamp: Number(event.block.timestamp),
       txHash: event.transaction.hash,
     },
     update: {
-      orderId: event.args.id,
+      orderId: Number(event.args.id),
       base: pair!.base,
       quote: pair!.quote,
       isBid: !event.args.isBid,
@@ -447,14 +446,14 @@ export const OrderMatchedHandleOrder = async (
       taker: event.args.sender,
       maker: event.args.owner,
       account: event.args.owner,
-      timestamp: event.block.timestamp,
+      timestamp: Number(event.block.timestamp),
       txHash: event.transaction.hash,
     },
   });
   // Report to client
   await io.emit("tradeHistory", {
     id: makerHistoryId,
-    orderId: event.args.id,
+    orderId: Number(event.args.id),
     base: pair!.base,
     quote: pair!.quote,
     isBid: !event.args.isBid,
@@ -464,7 +463,7 @@ export const OrderMatchedHandleOrder = async (
     taker: event.args.sender,
     maker: event.args.owner,
     account: event.args.owner,
-    timestamp: event.block.timestamp,
+    timestamp: Number(event.block.timestamp),
     txHash: event.transaction.hash,
   });
 
@@ -472,7 +471,7 @@ export const OrderMatchedHandleOrder = async (
   await TradeHistory.upsert({
     id: takerHistoryId,
     create: {
-      orderId: event.args.id,
+      orderId: Number(event.args.id),
       base: pair!.base,
       quote: pair!.quote,
       isBid: event.args.isBid,
@@ -482,11 +481,11 @@ export const OrderMatchedHandleOrder = async (
       taker: event.args.sender,
       maker: event.args.owner,
       account: event.args.sender,
-      timestamp: event.block.timestamp,
+      timestamp: Number(event.block.timestamp),
       txHash: event.transaction.hash,
     },
     update: {
-      orderId: event.args.id,
+      orderId: Number(event.args.id),
       base: pair!.base,
       quote: pair!.quote,
       isBid: event.args.isBid,
@@ -496,14 +495,14 @@ export const OrderMatchedHandleOrder = async (
       taker: event.args.sender,
       maker: event.args.owner,
       account: event.args.sender,
-      timestamp: event.block.timestamp,
+      timestamp: Number(event.block.timestamp),
       txHash: event.transaction.hash,
     },
   });
   // report to client
   await io.emit("tradeHistory", {
     id: takerHistoryId,
-    orderId: event.args.id,
+    orderId: Number(event.args.id),
     base: pair!.base,
     quote: pair!.quote,
     isBid: event.args.isBid,
@@ -513,7 +512,7 @@ export const OrderMatchedHandleOrder = async (
     taker: event.args.sender,
     maker: event.args.owner,
     account: event.args.sender,
-    timestamp: event.block.timestamp,
+    timestamp: Number(event.block.timestamp),
     txHash: event.transaction.hash,
   });
 };

@@ -69,7 +69,7 @@ export const OrderPlacedHandleAccountOrders = async (
   await Order.upsert({
     id,
     create: {
-      orderId: event.args.id,
+      orderId: Number(event.args.id),
       isBid: event.args.isBid,
       base: pair!.base,
       quote: pair!.quote,
@@ -77,12 +77,12 @@ export const OrderPlacedHandleAccountOrders = async (
       price: priceD,
       amount: amountD,
       placed: placedD,
-      timestamp: event.block.timestamp,
+      timestamp: Number(event.block.timestamp),
       account: event.args.owner,
       txHash: event.transaction.hash,
     },
     update: {
-      orderId: event.args.id,
+      orderId: Number(event.args.id),
       isBid: event.args.isBid,
       base: pair!.base,
       quote: pair!.quote,
@@ -90,7 +90,7 @@ export const OrderPlacedHandleAccountOrders = async (
       price: priceD,
       amount: amountD,
       placed: placedD,
-      timestamp: event.block.timestamp,
+      timestamp: Number(event.block.timestamp),
       account: event.args.owner,
       txHash: event.transaction.hash,
     },
@@ -98,7 +98,7 @@ export const OrderPlacedHandleAccountOrders = async (
   // report to client
   await io.emit("order", {
     id,
-    orderId: event.args.id,
+    orderId: Number(event.args.id),
     isBid: event.args.isBid,
     base: pair!.base,
     quote: pair!.quote,
@@ -106,7 +106,7 @@ export const OrderPlacedHandleAccountOrders = async (
     price: priceD,
     amount: amountD,
     placed: placedD,
-    timestamp: event.block.timestamp,
+    timestamp: Number(event.block.timestamp),
     account: event.args.owner,
     txHash: event.transaction.hash,
   });
@@ -115,26 +115,26 @@ export const OrderPlacedHandleAccountOrders = async (
   await OrderHistory.upsert({
     id,
     create: {
-      orderId: event.args.id,
+      orderId: Number(event.args.id),
       isBid: event.args.isBid,
       base: pair!.base,
       quote: pair!.quote,
       orderbook: event.args.orderbook,
       price: priceD,
       amount: amountD,
-      timestamp: event.block.timestamp,
+      timestamp: Number(event.block.timestamp),
       account: event.args.owner,
       txHash: event.transaction.hash,
     },
     update: {
-      orderId: event.args.id,
+      orderId: Number(event.args.id),
       isBid: event.args.isBid,
       base: pair!.base,
       quote: pair!.quote,
       orderbook: event.args.orderbook,
       price: priceD,
       amount: amountD,
-      timestamp: event.block.timestamp,
+      timestamp: Number(event.block.timestamp),
       account: event.args.owner,
       txHash: event.transaction.hash,
     },
@@ -142,14 +142,14 @@ export const OrderPlacedHandleAccountOrders = async (
   // report to client
   await io.emit("orderHistory", {
     id,
-    orderId: event.args.id,
+    orderId: Number(event.args.id),
     isBid: event.args.isBid,
     base: pair!.base,
     quote: pair!.quote,
     orderbook: event.args.orderbook,
     price: priceD,
     amount: amountD,
-    timestamp: event.block.timestamp,
+    timestamp: Number(event.block.timestamp),
     account: event.args.owner,
     txHash: event.transaction.hash,
   })
