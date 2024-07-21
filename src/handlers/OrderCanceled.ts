@@ -33,7 +33,7 @@ export const OrderCanceledHandleOrder = async (
     });
 
     // report to client
-    await io.emit("deleteOrder", {
+    await io.emit("deleteOrderHistory", {
       id
     });
   } else {
