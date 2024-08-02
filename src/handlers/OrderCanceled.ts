@@ -66,12 +66,23 @@ export const OrderCanceledHandleOrder = async (
       await Tick.delete({
         id: tickId,
       });
+      
+      // report to client
+      await io.emit("deleteTick", {
+        id: tickId,
+      });
     } else {
       await Tick.update({
         id: tickId,
         data: {
           amount: tickInfo.amount - amountD,
         },
+      });
+
+      // report to client
+      await io.emit("tick", {
+        ...tickInfo,
+        amount: tickInfo.amount - amountD,
       });
     }
   }
