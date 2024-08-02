@@ -4,6 +4,7 @@ export const OrderCanceledHandleOrder = async (
   event: any,
   Account: any,
   pair: any,
+  Tick: any,
   Order: any,
   OrderHistory: any,
   io: any
@@ -34,7 +35,7 @@ export const OrderCanceledHandleOrder = async (
 
     // report to client
     await io.emit("deleteOrderHistory", {
-      id
+      id,
     });
   } else {
     await OrderHistory.update({
@@ -51,6 +52,30 @@ export const OrderCanceledHandleOrder = async (
     });
   }
 
+  // remove tick amount from the canceled order
+  const tickId = event.args.orderbook
+    .concat("-")
+    .concat(event.args.isBid.toString())
+    .concat("-")
+    .concat(event.args.price.toString());
+  const tickInfo = await Order.findUnique({
+    id: tickId,
+  });
+  if (tickInfo) {
+    if (tickInfo.amount - amountD <= 0) {
+      await Tick.delete({
+        id: tickId,
+      });
+    } else {
+      await Tick.update({
+        id: tickId,
+        data: {
+          amount: tickInfo.amount - amountD,
+        },
+      });
+    }
+  }
+
   await Account.update({
     id: event.args.owner,
     data: ({ current }: any) => ({
@@ -65,7 +90,7 @@ export const OrderCanceledHandleOrder = async (
 
   // report to client
   await io.emit("deleteOrder", {
-    id
+    id,
   });
 };
 

@@ -123,12 +123,12 @@ ponder.on("matchingEngine:OrderPlaced", async ({ event, context }) => {
 
 
 ponder.on("matchingEngine:OrderCanceled", async ({ event, context }) => {
-  const { Order, OrderHistory, Account, Pair } = context.db;
+  const { Order, OrderHistory, Account, Pair, Tick } = context.db;
   const pair = await Pair.findUnique({
     id: event.args.orderbook,
   });
 
-  await OrderCanceledHandleOrder(event, Account, pair, Order, OrderHistory, io);
+  await OrderCanceledHandleOrder(event, Account, pair, Tick, Order, OrderHistory, io);
 });
 
 //@ts-ignore
