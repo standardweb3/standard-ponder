@@ -1,4 +1,4 @@
-import { formatUnits } from "viem";
+import { formatUnits, parseUnits } from "viem";
 
 export const OrderCanceledHandleOrder = async (
   event: any,
@@ -57,7 +57,7 @@ export const OrderCanceledHandleOrder = async (
     .concat("-")
     .concat(event.args.isBid.toString())
     .concat("-")
-    .concat(event.args.price.toString());
+    .concat(parseUnits(canceled.price, 8).toString());
   const tickInfo = await Order.findUnique({
     id: tickId,
   });
