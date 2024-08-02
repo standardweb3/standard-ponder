@@ -209,6 +209,7 @@ export const OrderMatchedHandleTrade = async (
       orderId: Number(event.args.id),
       base: pair!.base,
       quote: pair!.quote,
+      orderbook: event.args.orderbook,
       isBid: event.args.isBid,
       price: priceD,
       baseAmount: event.args.isBid ? counterD : amountD,

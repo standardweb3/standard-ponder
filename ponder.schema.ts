@@ -132,6 +132,8 @@ export default createSchema((p) => ({
   Trade: p.createTable({
     /// identifier for a trade
     id: p.string(),
+    /// orderbook contract address
+    orderbook: p.string().references("Pair.id"),
     /// order id which was matched
     orderId: p.int(),
     /// base info
@@ -192,6 +194,8 @@ export default createSchema((p) => ({
     ticks: p.many("Tick.orderbook"),
     /// orders
     orders: p.many("Order.orderbook"),
+    /// trades
+    trades: p.many("Trade.orderbook"),
     /// order history
     orderHistory: p.many("OrderHistory.orderbook"),
     /// trade history
