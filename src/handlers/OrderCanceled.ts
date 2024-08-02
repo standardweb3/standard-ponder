@@ -57,7 +57,7 @@ export const OrderCanceledHandleOrder = async (
     .concat("-")
     .concat(event.args.isBid.toString())
     .concat("-")
-    .concat(parseUnits(canceled.price, 8).toString());
+    .concat(parseUnits(canceled.price.toString(), 8).toString());
   const tickInfo = await Order.findUnique({
     id: tickId,
   });
