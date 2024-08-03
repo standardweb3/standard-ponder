@@ -185,7 +185,7 @@ export default createSchema((p) => ({
     /// quote token address
     quote: p.string().references("Token.id"),
     /// market price
-    price: p.float(),
+    price: p.float().optional(),
     /// orderbook contract address
     orderbook: p.string(),
     /// base token decimal

@@ -9,6 +9,7 @@ import {
   PairAddedHandleTokenPairOrderbook,
   NewMarketPriceHandleBuckets,
   NewMarketPriceHandleToken,
+  NewMarketPriceHandlePair,
 } from "./handlers";
 import { formatUnits } from "viem";
 
@@ -99,7 +100,7 @@ ponder.on("matchingEngine:NewMarketPrice", async ({ event, context }) => {
   });
 
   // Update pair
-  NewMarketPriceHandlePair(event, pair, io);
+  await NewMarketPriceHandlePair(event, Pair, io);
 
   // Update token info
   await NewMarketPriceHandleToken(event, pair, chainId, Token);
