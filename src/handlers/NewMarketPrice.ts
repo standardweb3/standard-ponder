@@ -46,9 +46,7 @@ export const NewMarketPriceHandleToken = async (
     const priceD = parseFloat(formatUnits(event.args.price, 8));
     BaseToken.update({
       id,
-      data: {
-        price: priceD,
-      },
+      price: priceD,
     });
   }
 };
