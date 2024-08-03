@@ -14,6 +14,26 @@ export const NewMarketPriceHandleBuckets = async (
   await NewMarketPriceHandleMinBuckets(event, pair, MinBucket, io);
 };
 
+export const NewMarketPriceHandlePair = async (
+  event: any,
+  Pair: any,
+  io: any
+) => {
+  Pair.update({
+    id: event.args.orderbook,
+    data: {
+      price: parseFloat(formatUnits(event.args.price, 8))
+    }
+  })
+  // report to client
+  await io.emit("marketPrice", {
+    id: event.args.orderbook,
+    data: {
+      price: parseFloat(formatUnits(event.args.price, 8))
+    }
+  });
+}
+
 export const NewMarketPriceHandleToken = async (
   event: any,
   pair: any,

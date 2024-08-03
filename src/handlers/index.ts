@@ -18,5 +18,6 @@ export {
     NewMarketPriceHandleDayBuckets,
     NewMarketPriceHandleHourBuckets,
     NewMarketPriceHandleBuckets,
-    NewMarketPriceHandleToken
+    NewMarketPriceHandleToken,
+    NewMarketPriceHandlePair
 } from "./NewMarketPrice"

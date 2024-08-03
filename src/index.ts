@@ -98,6 +98,9 @@ ponder.on("matchingEngine:NewMarketPrice", async ({ event, context }) => {
     id: event.args.orderbook,
   });
 
+  // Update pair
+  NewMarketPriceHandlePair(event, pair, io);
+
   // Update token info
   await NewMarketPriceHandleToken(event, pair, chainId, Token);
 
