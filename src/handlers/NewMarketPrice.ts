@@ -28,9 +28,7 @@ export const NewMarketPriceHandlePair = async (
   // report to client
   await io.emit("marketPrice", {
     id: event.args.orderbook,
-    data: {
-      price: parseFloat(formatUnits(event.args.price, 8))
-    }
+    price: parseFloat(formatUnits(event.args.price, 8))
   });
 }
 
@@ -46,7 +44,9 @@ export const NewMarketPriceHandleToken = async (
     const priceD = parseFloat(formatUnits(event.args.price, 8));
     BaseToken.update({
       id,
-      price: priceD,
+      data: {
+        price: priceD,
+      }
     });
   }
 };
