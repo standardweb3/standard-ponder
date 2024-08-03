@@ -51,7 +51,7 @@ ponder.on("matchingEngine:OrderMatched", async ({ event, context }) => {
   // Get tick info
   const tickId = event.args.orderbook
     .concat("-")
-    .concat(!event.args.isBid.toString())
+    .concat((!event.args.isBid).toString())
     .concat("-")
     .concat(event.args.price.toString());
   //console.log("matched", tickId);

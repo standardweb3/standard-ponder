@@ -253,9 +253,11 @@ export const OrderMatchedHandleTrade = async (
   // Subtract matched amount in tick
   const tickId = event.args.orderbook
     .concat("-")
-    .concat(!event.args.isBid.toString())
+    .concat((!event.args.isBid).toString())
     .concat("-")
     .concat(event.args.price.toString());
+
+  console.log("Matched tickId", tickId, event.args.clear);
 
   // Matched amount in tick, if the matched tick is sell order with base amount, amountD is quote amount to match,
   // if the matched tick is buy order with quote amount, amountD is base amount to match
@@ -400,7 +402,7 @@ export const OrderMatchedHandleOrder = async (
     .concat("-")
     .concat(event.args.orderbook)
     .concat("-")
-    .concat(!event.args.isBid.toString())
+    .concat((!event.args.isBid).toString())
     .concat("-")
     .concat(event.args.id.toString())
     .concat("-")
