@@ -2,6 +2,9 @@ import { createConfig, mergeAbis } from "@ponder/core";
 import { http } from "viem";
 import { MatchingEngineABI } from "./abis/matchingengineAbi";
 import { STNDXPABI } from "./abis/stndxpAbi";
+import defaultTokenList from "@standardweb3/default-token-list";
+
+const networkName = process.env.NETWORKNAME ?? "Base";
 
 export default createConfig({
   networks: {
@@ -13,19 +16,19 @@ export default createConfig({
   contracts: {
     matchingEngine: {
       abi: MatchingEngineABI,
-      address: process.env.CONTRACT as `0x${string}`,
+      address: defaultTokenList.matchingEngine[networkName].address as `0x${string}`,
       network: {
         deployed: {
-          startBlock: parseInt(process.env.STARTBLOCK as string),
+          startBlock: parseInt(defaultTokenList.matchingEngine[networkName].startBlock as string),
         }
       }
     },
     stndxp: {
       abi: mergeAbis([MatchingEngineABI, STNDXPABI]),
-      address: process.env.STNDXP as `0x${string}`,
+      address: defaultTokenList.stndxp[networkName].address as `0x${string}`,
       network: {
         deployed: {
-          startBlock: parseInt(process.env.STARTBLOCK as string),
+          startBlock: parseInt(defaultTokenList.stndxp[networkName].startBlock as string),
         }
       }
     }
