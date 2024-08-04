@@ -13,7 +13,7 @@
   "dependencies": {
     "@knocklabs/node": "^0.6.8",
     "@ponder/core": "0.4.40",
-    "@standardweb3/default-token-list": "^0.0.13",
+    "@standardweb3/default-token-list": "^0.0.14",
     "socket.io": "^4.7.5",
     "viem": "^1.19.9"
   },
