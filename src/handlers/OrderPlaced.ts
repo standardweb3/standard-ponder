@@ -160,6 +160,9 @@ export const OrderPlacedHandleAccountOrders = async (
     .concat(event.args.isBid.toString())
     .concat("-")
     .concat(event.args.price.toString());
+
+  // declare varaible to store tick updated amount
+  let tickUpdate = 0;
   await Tick.upsert({
     id: tickId,
     create: {
@@ -170,6 +173,7 @@ export const OrderPlacedHandleAccountOrders = async (
       count: 1,
     },
     update({ current }: any) {
+      tickUpdate = current.amount + amountD;
       return {
         amount: current.amount + amountD,
         count: current.count + 1,
@@ -183,7 +187,7 @@ export const OrderPlacedHandleAccountOrders = async (
     orderbook: event.args.orderbook,
     isBid: event.args.isBid,
     price: priceD,
-    amount: amountD,
+    amount: tickUpdate,
     count: 1,
   })
 };
