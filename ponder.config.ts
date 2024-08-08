@@ -22,15 +22,6 @@ export default createConfig({
           startBlock: parseInt(defaultTokenList.matchingEngine[networkName].startBlock as string),
         }
       }
-    },
-    stndxp: {
-      abi: mergeAbis([MatchingEngineABI, STNDXPABI]),
-      address: defaultTokenList.stndxp[networkName].address as `0x${string}`,
-      network: {
-        deployed: {
-          startBlock: parseInt(defaultTokenList.stndxp[networkName].startBlock as string),
-        }
-      }
     }
   }
 });
